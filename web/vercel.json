@@ -6,6 +6,10 @@
   "devCommand": "yarn dev",
   "regions": ["iad1"],
   "functions": {
+    "app/api/mint/route.ts": {
+      "maxDuration": 60,
+      "maxRequestBodySize": "25mb"
+    },
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
