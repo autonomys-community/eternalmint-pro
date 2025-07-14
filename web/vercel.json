@@ -6,9 +6,11 @@
   "devCommand": "yarn dev",
   "regions": ["iad1"],
   "functions": {
+    "app/api/upload-chunk/route.ts": {
+      "maxDuration": 60
+    },
     "app/api/mint/route.ts": {
-      "maxDuration": 60,
-      "maxRequestBodySize": "25mb"
+      "maxDuration": 60
     },
     "app/api/**/*.ts": {
       "maxDuration": 30
