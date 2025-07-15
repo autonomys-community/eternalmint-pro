@@ -44,6 +44,7 @@ export const CreateNFTForm: React.FC = () => {
 
   const [fileError, setFileError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [nftDetails, setNftDetails] = useState<NftDetails | null>(null);
 
   // Check if uploaded file is an animated GIF
@@ -110,6 +111,65 @@ export const CreateNFTForm: React.FC = () => {
     [formData]
   );
 
+  // Function to upload file in chunks
+  const uploadFileInChunks = useCallback(async (file: File): Promise<string> => {
+    const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB chunks (under Vercel's 4.5MB limit)
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const uploadId = `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    setUploadProgress(0);
+
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+      const start = chunkIndex * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, file.size);
+      const chunk = file.slice(start, end);
+
+      const chunkFormData = new FormData();
+      chunkFormData.append("chunk", chunk);
+      chunkFormData.append("chunkIndex", chunkIndex.toString());
+      chunkFormData.append("totalChunks", totalChunks.toString());
+      chunkFormData.append("uploadId", uploadId);
+      chunkFormData.append("fileName", file.name);
+      chunkFormData.append("fileType", file.type);
+      chunkFormData.append("fileSize", file.size.toString());
+
+      console.log(`Uploading chunk ${chunkIndex}/${totalChunks - 1}`);
+      
+      const response = await fetch("/api/upload-chunk", {
+        method: "POST",
+        body: chunkFormData,
+      });
+
+      console.log(`Chunk ${chunkIndex} response status:`, response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Chunk ${chunkIndex} failed with status ${response.status}:`, errorText);
+        let errorMessage = "Failed to upload chunk";
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(`Chunk ${chunkIndex} failed: ${errorMessage}`);
+      }
+
+      const result = await response.json();
+      console.log(`Chunk ${chunkIndex} result:`, result);
+      
+      // Update progress
+      setUploadProgress(Math.round(((chunkIndex + 1) / totalChunks) * 100));
+
+      // If this is the last chunk and upload is complete, return the CID
+      if (result.complete) {
+        return result.cid;
+      }
+    }
+
+    throw new Error("Upload completed but no CID received");
+  }, []);
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -122,32 +182,49 @@ export const CreateNFTForm: React.FC = () => {
       sendGAEvent("event", "mint_started", { value: formData.name });
       setIsSubmitting(true);
 
-      const data = new FormData();
-      data.append("name", formData.name);
-      data.append("supply", formData.supply.toString());
-      data.append("description", formData.description);
-      data.append("externalLink", formData.externalLink);
-      data.append("creator", formData.creator);
-
-      if (formData.media) data.append("media", formData.media);
-
       try {
+        let imageCid = "";
+
+        // Upload file using chunked upload if it exists
+        if (formData.media) {
+          console.log(`Uploading file: ${formData.media.name} (${formData.media.size} bytes)`);
+          imageCid = await uploadFileInChunks(formData.media);
+          console.log(`File uploaded successfully with CID: ${imageCid}`);
+        }
+
+        // Create NFT with the uploaded file CID
+        const mintData = {
+          name: formData.name,
+          supply: formData.supply.toString(),
+          description: formData.description,
+          externalLink: formData.externalLink,
+          creator: formData.creator,
+          imageCid: imageCid,
+        };
+
         const response = await fetch("/api/mint", {
           method: "POST",
-          body: data,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(mintData),
         });
+
         const result = await response.json();
         if (response.ok) {
           setNftDetails(result);
           sendGAEvent("event", "minted", { value: result.txHash });
-        } else console.error("Failed to create NFT.");
+        } else {
+          console.error("Failed to create NFT:", result.message);
+        }
       } catch (error) {
         console.error("Error during NFT creation:", error);
       } finally {
         setIsSubmitting(false);
+        setUploadProgress(0);
       }
     },
-    [formData, hasMinterRole]
+    [formData, hasMinterRole, uploadFileInChunks]
   );
 
   return (
@@ -280,6 +357,20 @@ export const CreateNFTForm: React.FC = () => {
               {fileError && (
                 <p className="mt-2 text-red-500 text-sm">{fileError}</p>
               )}
+              {isSubmitting && uploadProgress > 0 && (
+                <div className="mt-2">
+                  <div className="flex justify-between text-sm text-white mb-1">
+                    <span>Uploading file...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-[#1E58FC] via-[#D914E4] to-[#F10419] h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -321,7 +412,11 @@ export const CreateNFTForm: React.FC = () => {
                 isSubmitting ? "bg-gray-500" : "bg-blue-600 hover:bg-blue-700"
               }`}
             >
-              {isSubmitting ? "Minting NFT in progress..." : "Create"}
+              {isSubmitting 
+                ? uploadProgress > 0 && uploadProgress < 100 
+                  ? `Uploading... ${uploadProgress}%` 
+                  : "Minting NFT..." 
+                : "Create"}
             </button>
           )}
         </div>
