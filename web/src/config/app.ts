@@ -3,7 +3,7 @@
 // Sensitive values (API keys, private keys) should remain in environment variables.
 
 export type Environment = 'development' | 'staging' | 'production';
-export type NetworkName = 'taurus' | 'mainnet';
+export type NetworkName = 'chronos' | 'mainnet';
 export type StorageNetworkName = 'mainnet';
 
 // Determine environment
@@ -56,11 +56,11 @@ const getHostUrl = (): string => {
 
 // EVM Network configurations (blockchain infrastructure only)
 export const EVM_NETWORKS = {
-  taurus: {
-    name: 'Autonomys Taurus Auto EVM',
-    chainId: 490000,
-    rpcUrl: 'https://auto-evm.taurus.autonomys.xyz/ws',
-    blockExplorer: 'https://explorer.auto-evm.taurus.autonomys.xyz',
+  chronos: {
+    name: 'Autonomys Chronos Auto EVM',
+    chainId: 8700,
+    rpcUrl: 'wss://auto-evm.chronos.autonomys.xyz/ws',
+    blockExplorer: 'https://explorer.auto-evm.chronos.autonomys.xyz',
     currency: {
       name: 'tAI3',
       symbol: 'tAI3',
@@ -70,7 +70,7 @@ export const EVM_NETWORKS = {
   },
   mainnet: {
     name: 'Autonomys Mainnet Auto EVM',
-    chainId: 490001, // Placeholder - update when mainnet is available
+    chainId: 870,
     rpcUrl: 'https://auto-evm.mainnet.autonomys.xyz/ws', // Placeholder
     blockExplorer: 'https://explorer.auto-evm.mainnet.autonomys.xyz', // Placeholder
     currency: {
@@ -94,7 +94,7 @@ export const STORAGE_NETWORKS = {
 // Contract deployment configurations (deployment-specific)
 export const CONTRACT_DEPLOYMENTS = {
   development: {
-    evmNetwork: 'taurus' as NetworkName,
+    evmNetwork: 'chronos' as NetworkName,
     storageNetwork: 'mainnet' as StorageNetworkName,
     contractAddress: '0x09e8798DAb58C211183c42325Ad7CCd935C11f7D',
     subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-dev/v0.0.23',
@@ -102,7 +102,7 @@ export const CONTRACT_DEPLOYMENTS = {
     deployedAt: '2025-06-25', // Update with actual deployment date
   },
   staging: {
-    evmNetwork: 'taurus' as NetworkName,
+    evmNetwork: 'chronos' as NetworkName,
     storageNetwork: 'mainnet' as StorageNetworkName,
     contractAddress: '0x09e8798DAb58C211183c42325Ad7CCd935C11f7D',
     subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-dev/v0.0.23',
@@ -110,8 +110,8 @@ export const CONTRACT_DEPLOYMENTS = {
     deployedAt: '2025-06-25', // Update with actual deployment date
   },
   production: {
-    evmNetwork: 'taurus' as NetworkName, // Will change to 'mainnet' when ready
-    storageNetwork: 'mainnet' as StorageNetworkName, // Could use mainnet storage even with taurus EVM
+    evmNetwork: 'mainnet' as NetworkName, // Will change to 'mainnet' when ready
+    storageNetwork: 'mainnet' as StorageNetworkName, // Could use mainnet storage even with chronos EVM
     contractAddress: '0x8A7325f9eA80D65c8f69F3797F345Cc831EC01f4', // Will be different for production
     subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro/v0.0.2', // Different subgraph for production
     version: '1.0.0',

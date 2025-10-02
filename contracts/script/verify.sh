@@ -9,7 +9,7 @@ fi
 forge verify-contract  \
     --rpc-url $RPC_URL  \
     --verifier blockscout  \
-    --verifier-url https://explorer.auto-evm.taurus.autonomys.xyz/api -e "" \
+    --verifier-url https://explorer.auto-evm.chronos.autonomys.xyz/api -e "" \
     --evm-version london --chain 490000 --compiler-version 0.8.30  \
     --watch  \
     0x346201D2A8eB53807991AF04f7842334674B8793  \

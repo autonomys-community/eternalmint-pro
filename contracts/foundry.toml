@@ -6,6 +6,6 @@ optimizer = true
 optimizer_runs = 20_000
 
 [rpc_endpoints]
-taurus = "${TAURUS_RPC_URL}"
+chronos = "${CHRONOS_RPC_URL}"
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
