@@ -105,7 +105,7 @@ export const POST = async (req: NextRequest) => {
     const metadata = {
       description,
       external_url: externalLink,
-      image: `${storageNetworkName}:${imageCid}`, // Store network:cid format
+      image: imageCid,
       name,
       attributes: [],
     };
