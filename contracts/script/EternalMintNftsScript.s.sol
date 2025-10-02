@@ -8,15 +8,19 @@ contract EternalMintNftsScript is Script {
     function setUp() public {}
 
     function run() public returns (EternalMintNfts) {
+        // Get base URI from environment variable
+        string memory baseURI = vm.envString("BASE_URI");
+        
         // Log deployment info
         console.log("Deploying EternalMintNfts contract");
         console.log("Deployer address:", msg.sender);
         console.log("Chain ID:", block.chainid);
+        console.log("Base URI:", baseURI);
 
         // Begin sending transactions
         vm.startBroadcast();
 
-        EternalMintNfts eternalMintNfts = new EternalMintNfts();
+        EternalMintNfts eternalMintNfts = new EternalMintNfts(baseURI);
         console.log("EternalMintNfts deployed to:", address(eternalMintNfts));
 
         // Stop sending transactions

@@ -24,7 +24,7 @@ contract EternalMintNftsTest is Test {
         nonAdmin = address(0x2);
         nftCreator = address(0x3); // Address to act as the NFT creator in tests
 
-        eternalMintNfts = new EternalMintNfts();
+        eternalMintNfts = new EternalMintNfts("https://staging.eternalmintpro.xyz/api/cid/");
     }
 
     /**
@@ -230,5 +230,81 @@ contract EternalMintNftsTest is Test {
         // Admin revokes MINTER_ROLE from the minter address
         eternalMintNfts.revokeRole(MINTER_ROLE, minter);
         assertFalse(eternalMintNfts.hasRole(MINTER_ROLE, minter), "Minter should not have MINTER_ROLE after revocation");
+    }
+
+    /**
+     * @notice Tests the `uri` function to ensure it returns the correct metadata URI for a given tokenId.
+     */
+    function test_Uri() public {
+        // Arrange: Grant MINTER_ROLE to the minter
+        eternalMintNfts.grantRole(MINTER_ROLE, minter);
+
+        // Define test data
+        string memory cid = "QmTestCID123456789";
+        uint256 supply = 100;
+
+        // Act: Mint an NFT
+        vm.prank(minter);
+        eternalMintNfts.mint(nftCreator, cid, supply);
+
+        // Get the token ID for the minted NFT
+        uint256 tokenId = eternalMintNfts.getTokenId(cid);
+
+        // Act: Get the URI for the minted token
+        string memory tokenUri = eternalMintNfts.uri(tokenId);
+
+        // Assert: Verify the URI matches the expected format
+        string memory expectedUri = string(abi.encodePacked("https://staging.eternalmintpro.xyz/api/cid/", cid));
+        assertEq(tokenUri, expectedUri, "URI should match the expected format with CID");
+    }
+
+    /**
+     * @notice Tests that the `uri` function reverts for non-existent tokens.
+     */
+    function test_UriRevertsForNonExistentToken() public {
+        // Arrange: Use a token ID that doesn't exist
+        uint256 nonExistentTokenId = 999;
+
+        // Act & Assert: Expect the function to revert
+        vm.expectRevert("Token does not exist");
+        eternalMintNfts.uri(nonExistentTokenId);
+    }
+
+    /**
+     * @notice Tests that the base URI can be retrieved.
+     */
+    function test_GetBaseURI() public view {
+        // Act: Get the base URI
+        string memory baseUri = eternalMintNfts.getBaseURI();
+
+        // Assert: Verify it matches what was set in constructor
+        assertEq(baseUri, "https://staging.eternalmintpro.xyz/api/cid/", "Base URI should match constructor value");
+    }
+
+    /**
+     * @notice Tests that admin can update the base URI.
+     */
+    function test_AdminCanSetBaseURI() public {
+        // Arrange: New base URI
+        string memory newBaseUri = "https://new.eternalmintpro.xyz/api/cid/";
+
+        // Act: Admin updates base URI
+        eternalMintNfts.setBaseURI(newBaseUri);
+
+        // Assert: Verify the base URI was updated
+        assertEq(eternalMintNfts.getBaseURI(), newBaseUri, "Base URI should be updated");
+    }
+
+    /**
+     * @notice Tests that non-admin cannot update the base URI.
+     */
+    function test_NonAdminCannotSetBaseURI() public {
+        // Arrange: New base URI
+        string memory newBaseUri = "https://malicious.com/api/cid/";
+
+        // Act & Assert: Expect the function to revert when called by non-admin
+        vm.prank(nonAdmin);
+        vm.expectRevert();
+        eternalMintNfts.setBaseURI(newBaseUri);
     }
 }

@@ -4,8 +4,11 @@ import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract EternalMintNfts is ERC1155("https://eternalmint.xyz/api/cid/{id}"), AccessControl, ReentrancyGuard {
+contract EternalMintNfts is ERC1155(""), AccessControl, ReentrancyGuard {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+    // Base URI for metadata
+    string private _baseURI;
 
     // Struct to store token details
     struct Token {
@@ -39,6 +42,15 @@ contract EternalMintNfts is ERC1155("https://eternalmint.xyz/api/cid/{id}"), Acc
         uint256 amount,
         uint256 timestamp
     );
+
+    /**
+     * @dev Constructor sets the base URI for metadata endpoints.
+     * @param baseURI The base URI for the metadata API (e.g., "https://eternalmintpro.xyz/api/cid/")
+     */
+    constructor(string memory baseURI) {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _baseURI = baseURI;
+    }
 
     // Modifiers
     modifier validRecipient(address recipient) {
@@ -77,11 +89,6 @@ contract EternalMintNfts is ERC1155("https://eternalmint.xyz/api/cid/{id}"), Acc
         
         require(isAdmin || isCreator, "Not authorized: must be contract admin or NFT creator");
         _;
-    }
-
-    constructor() {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, msg.sender);
     }
 
     /**
@@ -337,6 +344,35 @@ contract EternalMintNfts is ERC1155("https://eternalmint.xyz/api/cid/{id}"), Acc
      */
     function getCid(uint256 tokenId) public view returns (string memory) {
         return tokens[tokenId].cid;
+    }
+
+    /**
+     * @dev Returns the URI for a given token ID.
+     * This function is required for MetaMask and other wallets to display NFT metadata.
+     * It returns the API endpoint that serves the JSON metadata for the token.
+     *
+     * @param tokenId The ID of the token for which the URI is requested.
+     * @return The metadata URI for the specified token ID.
+     */
+    function uri(uint256 tokenId) public view override returns (string memory) {
+        require(tokens[tokenId].supply > 0, "Token does not exist");
+        return string(abi.encodePacked(_baseURI, tokens[tokenId].cid));
+    }
+
+    /**
+     * @dev Returns the base URI for metadata.
+     * @return The current base URI string.
+     */
+    function getBaseURI() public view returns (string memory) {
+        return _baseURI;
+    }
+
+    /**
+     * @dev Updates the base URI for metadata. Only admin can call this.
+     * @param newBaseURI The new base URI to set.
+     */
+    function setBaseURI(string memory newBaseURI) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        _baseURI = newBaseURI;
     }
 
     /**

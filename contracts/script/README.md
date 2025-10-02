@@ -36,8 +36,11 @@ cp .env.sample .env
 
 Edit `.env` file with your configuration:
 - Set `PRIVATE_KEY`
-- Set `RPC_URL` 
-- Set other required variables
+- Set `RPC_URL` (HTTP/S endpoint)
+- Set `BASE_URI` (metadata API endpoint for your environment)
+  - Development: `http://localhost:3006/api/cid/`
+  - Staging: `https://staging.eternalmint.xyz/api/cid/`
+  - Production: `https://eternalmint.xyz/api/cid/`
 
 ### Deploy Contract
 ```bash
@@ -194,9 +197,35 @@ Checking DEFAULT_ADMIN_ROLE...
 ❌ Address does NOT have DEFAULT_ADMIN_ROLE
 ```
 
+## 5. Base URI Management
+
+The contract supports dynamic base URI configuration for different environments.
+
+### View Current Base URI
+```bash
+cast call $CONTRACT_ADDRESS "getBaseURI()" --rpc-url $RPC_URL
+```
+
+### Update Base URI (Admin Only)
+```bash
+# Update to staging environment
+cast send $CONTRACT_ADDRESS \
+  "setBaseURI(string)" \
+  "https://staging.eternalmintpro.xyz/api/cid/" \
+  --private-key $PRIVATE_KEY \
+  --rpc-url $RPC_URL
+
+# Update to production environment  
+cast send $CONTRACT_ADDRESS \
+  "setBaseURI(string)" \
+  "https://eternalmintpro.xyz/api/cid/" \
+  --private-key $PRIVATE_KEY \
+  --rpc-url $RPC_URL
+```
+
 ## Role Hierarchy
 
-- **DEFAULT_ADMIN_ROLE**: Can grant and revoke all roles, including MINTER_ROLE
+- **DEFAULT_ADMIN_ROLE**: Can grant and revoke all roles, including MINTER_ROLE, and update base URI
 - **MINTER_ROLE**: Can mint new NFTs through the contract
 
 ## Network Information
