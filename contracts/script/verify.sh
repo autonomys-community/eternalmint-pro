@@ -10,9 +10,9 @@ forge verify-contract  \
     --rpc-url $RPC_URL  \
     --verifier blockscout  \
     --verifier-url https://explorer.auto-evm.chronos.autonomys.xyz/api -e "" \
-    --evm-version london --chain 490000 --compiler-version 0.8.30  \
+    --evm-version london --chain 8700 --compiler-version 0.8.30  \
     --watch  \
-    0x346201D2A8eB53807991AF04f7842334674B8793  \
+    $CONTRACT_ADDRESS  \
     src/EternalMintNfts.sol:EternalMintNfts
 
 # If the verification fails, you can try to verify the contract manually using the Single File approach on the Blockscout UI

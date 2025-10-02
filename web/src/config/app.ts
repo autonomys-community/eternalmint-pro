@@ -59,7 +59,7 @@ export const EVM_NETWORKS = {
   chronos: {
     name: 'Autonomys Chronos Auto EVM',
     chainId: 8700,
-    rpcUrl: 'wss://auto-evm.chronos.autonomys.xyz/ws',
+    rpcUrl: 'https://auto-evm.chronos.autonomys.xyz/ws',
     blockExplorer: 'https://explorer.auto-evm.chronos.autonomys.xyz',
     currency: {
       name: 'tAI3',
@@ -96,7 +96,7 @@ export const CONTRACT_DEPLOYMENTS = {
   development: {
     evmNetwork: 'chronos' as NetworkName,
     storageNetwork: 'mainnet' as StorageNetworkName,
-    contractAddress: '0x09e8798DAb58C211183c42325Ad7CCd935C11f7D',
+    contractAddress: '0xCBD609f1CE467e149359475aa2f28daC6B75170d',
     subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-dev/v0.0.23',
     version: '1.0.0',
     deployedAt: '2025-06-25', // Update with actual deployment date
@@ -104,7 +104,7 @@ export const CONTRACT_DEPLOYMENTS = {
   staging: {
     evmNetwork: 'chronos' as NetworkName,
     storageNetwork: 'mainnet' as StorageNetworkName,
-    contractAddress: '0x09e8798DAb58C211183c42325Ad7CCd935C11f7D',
+    contractAddress: '0xCBD609f1CE467e149359475aa2f28daC6B75170d',
     subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-dev/v0.0.23',
     version: '1.0.0',
     deployedAt: '2025-06-25', // Update with actual deployment date
