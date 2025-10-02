@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {EternalMintNfts} from "../src/EternalMintNfts.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract EternalMintNftsTest is Test {
     EternalMintNfts public eternalMintNfts;
@@ -131,7 +130,7 @@ contract EternalMintNftsTest is Test {
         assertEq(eternalMintNfts.balanceOf(nftCreator, tokenId), supply, "NFT creator should have the correct token balance");
 
         // Assert that the CID is correctly associated with the tokenId
-        assertEq(eternalMintNfts.getCID(tokenId), cid, "CID should be correctly associated with tokenId");
+        assertEq(eternalMintNfts.getCid(tokenId), cid, "CID should be correctly associated with tokenId");
 
         // Assert that the creator of the tokenId is the specified nftCreator
         assertEq(eternalMintNfts.getCreator(tokenId), nftCreator, "Creator should be the specified NFT creator address");
@@ -180,7 +179,7 @@ contract EternalMintNftsTest is Test {
     }
 
     /**
-     * @notice Tests the `getCID` function to ensure it returns the correct CID for a given tokenId.
+     * @notice Tests the `getCid` function to ensure it returns the correct CID for a given tokenId.
      */
     function test_GetCID() public {
         // Arrange
@@ -195,10 +194,10 @@ contract EternalMintNftsTest is Test {
         vm.stopPrank();
 
         // Act: Retrieve the CID associated with the tokenId
-        string memory retrievedCID = eternalMintNfts.getCID(tokenId);
+        string memory retrievedCid = eternalMintNfts.getCid(tokenId);
 
         // Assert that the retrieved CID matches the original CID
-        assertEq(retrievedCID, cid, "Retrieved CID should match the original CID");
+        assertEq(retrievedCid, cid, "Retrieved CID should match the original CID");
     }
 
     /**
@@ -206,18 +205,18 @@ contract EternalMintNftsTest is Test {
      */
     function test_SupportsInterface() public view {
         // Define interface IDs
-        bytes4 ERC1155_INTERFACE_ID = 0xd9b67a26;
-        bytes4 ACCESS_CONTROL_INTERFACE_ID = 0x7965db0b;
-        bytes4 RANDOM_INTERFACE_ID = 0xffffffff;
+        bytes4 erc1155InterfaceId = 0xd9b67a26;
+        bytes4 accessControlInterfaceId = 0x7965db0b;
+        bytes4 randomInterfaceId = 0xffffffff;
 
         // Assert that the contract supports ERC1155 interface
-        assertTrue(eternalMintNfts.supportsInterface(ERC1155_INTERFACE_ID), "Should support ERC1155 interface");
+        assertTrue(eternalMintNfts.supportsInterface(erc1155InterfaceId), "Should support ERC1155 interface");
 
         // Assert that the contract supports AccessControl interface
-        assertTrue(eternalMintNfts.supportsInterface(ACCESS_CONTROL_INTERFACE_ID), "Should support AccessControl interface");
+        assertTrue(eternalMintNfts.supportsInterface(accessControlInterfaceId), "Should support AccessControl interface");
 
         // Assert that the contract does not support a random, undefined interface
-        assertFalse(eternalMintNfts.supportsInterface(RANDOM_INTERFACE_ID), "Should not support undefined interface");
+        assertFalse(eternalMintNfts.supportsInterface(randomInterfaceId), "Should not support undefined interface");
     }
 
     /**

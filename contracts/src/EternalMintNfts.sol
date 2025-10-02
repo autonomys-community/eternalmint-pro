@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract EternalMintNfts is ERC1155("https://eternalmint.xyz/api/cid/{id}"), AccessControl, ReentrancyGuard {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -335,7 +335,7 @@ contract EternalMintNfts is ERC1155("https://eternalmint.xyz/api/cid/{id}"), Acc
      * @param tokenId The ID of the token for which the CID is requested.
      * @return The CID string linked to the provided token ID.
      */
-    function getCID(uint256 tokenId) public view returns (string memory) {
+    function getCid(uint256 tokenId) public view returns (string memory) {
         return tokens[tokenId].cid;
     }
 
