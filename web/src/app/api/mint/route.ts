@@ -77,19 +77,8 @@ export const POST = async (req: NextRequest) => {
     const arrayBuffer = await media.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Use the storage network name from APP_CONFIG
-    const storageNetworkName = APP_CONFIG.storage.networkName;
-    let networkString: "taurus" | "mainnet";
-    if (storageNetworkName === "taurus") {
-      networkString = "taurus";
-    } else if (storageNetworkName === "mainnet") {
-      networkString = "mainnet";
-    } else {
-      return NextResponse.json(
-        { message: `Invalid storage network: ${storageNetworkName}` },
-        { status: 500 }
-      );
-    }
+    // Use mainnet storage (only supported network)
+    const networkString = "mainnet";
 
     const driveClient = createAutoDriveApi({
       apiKey: process.env.AUTO_DRIVE_API_KEY!, 

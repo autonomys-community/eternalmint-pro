@@ -34,12 +34,12 @@ export const getStorageApiUrl = (imageString: string): string => {
     return "";
   }
   
-  return `/api/cid/${parsed.network}/${parsed.cid}`;
+  return `/api/cid/${parsed.cid}`;
 };
 
-// Construct metadata API URL from plain CID using current storage network
+// Construct metadata API URL
 export const getMetadataApiUrl = (cid: string): string => {
-  return `/api/cid/${APP_CONFIG.storage.networkName}/${cid}`;
+  return `/api/cid/${cid}`;
 };
 
 // Get storage network API URL directly

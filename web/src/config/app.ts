@@ -4,7 +4,7 @@
 
 export type Environment = 'development' | 'staging' | 'production';
 export type NetworkName = 'taurus' | 'mainnet';
-export type StorageNetworkName = 'taurus' | 'mainnet';
+export type StorageNetworkName = 'mainnet';
 
 // Determine environment
 const getEnvironment = (): Environment => {
@@ -84,11 +84,6 @@ export const EVM_NETWORKS = {
 
 // Storage Network configurations (file storage infrastructure only)
 export const STORAGE_NETWORKS = {
-  taurus: {
-    name: 'Autonomys Taurus Auto Drive',
-    apiUrl: 'https://demo.auto-drive.autonomys.xyz/api/objects',
-    testnet: true,
-  },
   mainnet: {
     name: 'Autonomys Mainnet Auto Drive',
     apiUrl: 'https://mainnet.auto-drive.autonomys.xyz/api/objects',
@@ -100,7 +95,7 @@ export const STORAGE_NETWORKS = {
 export const CONTRACT_DEPLOYMENTS = {
   development: {
     evmNetwork: 'taurus' as NetworkName,
-    storageNetwork: 'taurus' as StorageNetworkName,
+    storageNetwork: 'mainnet' as StorageNetworkName,
     contractAddress: '0x09e8798DAb58C211183c42325Ad7CCd935C11f7D',
     subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-dev/v0.0.23',
     version: '1.0.0',
@@ -108,7 +103,7 @@ export const CONTRACT_DEPLOYMENTS = {
   },
   staging: {
     evmNetwork: 'taurus' as NetworkName,
-    storageNetwork: 'taurus' as StorageNetworkName,
+    storageNetwork: 'mainnet' as StorageNetworkName,
     contractAddress: '0x09e8798DAb58C211183c42325Ad7CCd935C11f7D',
     subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-dev/v0.0.23',
     version: '1.0.0',

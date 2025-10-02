@@ -35,7 +35,7 @@ const detectFileType = async (arrayBuffer: ArrayBuffer): Promise<string> => {
   return "unknown";
 };
 
-async function fetchFromAutoDrive(cid: string, storageNetwork: string) {
+async function fetchFromAutoDrive(cid: string) {
   const apiKey = process.env.AUTO_DRIVE_API_KEY;
   if (!apiKey) {
     throw new Error("AUTO_DRIVE_API_KEY is not set");
@@ -44,7 +44,7 @@ async function fetchFromAutoDrive(cid: string, storageNetwork: string) {
   try {
     const api = createAutoDriveApi({
       apiKey,
-      network: storageNetwork as "taurus" | "mainnet"
+      network: "mainnet"
     });
     
     const stream = await api.downloadFile(cid);
@@ -59,7 +59,7 @@ async function fetchFromAutoDrive(cid: string, storageNetwork: string) {
     console.error("AutoDrive download failed:", {
       message: error instanceof Error ? error.message : String(error),
       cid,
-      network: storageNetwork
+      network: "mainnet"
     });
     throw new Error(`AutoDrive download failed: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -69,21 +69,16 @@ export async function GET(req: NextRequest) {
   try {
     const pathname = req.nextUrl.pathname;
     
-    // For URL /api/cid/taurus/bafkr6igbtskqntm5crr4danp6wkp4kkt4vgwufwfxxrwjiog4qiijkwfoi
-    // Split gives: ["", "api", "cid", "taurus", "bafkr6igbtskqntm5crr4danp6wkp4kkt4vgwufwfxxrwjiog4qiijkwfoi"]
+    // For URL /api/cid/bafkr6igbtskqntm5crr4danp6wkp4kkt4vgwufwfxxrwjiog4qiijkwfoi
+    // Split gives: ["", "api", "cid", "bafkr6igbtskqntm5crr4danp6wkp4kkt4vgwufwfxxrwjiog4qiijkwfoi"]
     const pathParts = pathname.split("/");
-    const storageNetwork = pathParts[3]; // "taurus" or "mainnet"
-    const cid = pathParts[4]; // the actual CID
+    const cid = pathParts[3]; // the actual CID
     
     if (!cid) {
       return NextResponse.json({ error: "CID is required" }, { status: 400 });
     }
-    
-    if (!storageNetwork || !["taurus", "mainnet"].includes(storageNetwork)) {
-      return NextResponse.json({ error: "Invalid storage network" }, { status: 400 });
-    }
 
-    const fileBuffer = await fetchFromAutoDrive(cid, storageNetwork);
+    const fileBuffer = await fetchFromAutoDrive(cid);
     
     //@ts-expect-error - fileBuffer is a Buffer
     const fileType = await detectFileType(fileBuffer);
