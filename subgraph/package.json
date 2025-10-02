@@ -4,10 +4,13 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy eternal-mint-nfts-taurus --version-label v0.0.1 --node https://subgraphs.alchemy.com/api/subgraphs/deploy --ipfs https://ipfs.satsuma.xyz",
-    "create-local": "graph create --node http://localhost:8020/ eternal-mint-nfts-taurus",
-    "remove-local": "graph remove --node http://localhost:8020/ eternal-mint-nfts-taurus",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 eternal-mint-nfts-taurus",
+    "auth": "graph auth --studio",
+    "deploy:dev": "graph deploy --studio eternalmint-pro-dev",
+    "deploy:staging": "graph deploy --studio eternalmint-pro-staging --file subgraph.staging.yaml",
+    "deploy:production": "graph deploy --studio eternalmint-pro --file subgraph.production.yaml",
+    "create-local": "graph create --node http://localhost:8020/ eternalmint-pro",
+    "remove-local": "graph remove --node http://localhost:8020/ eternalmint-pro",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 eternalmint-pro",
     "test": "graph test"
   },
   "dependencies": {

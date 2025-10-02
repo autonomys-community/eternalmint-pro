@@ -28,6 +28,13 @@ forge test
 
 ## 2. Contract Deployment
 
+### VERY IMPORTANT
+Your foundry.toml file must specify the following or there will be a mismatch when trying to verify the contract:
+```
+[profile.default]
+evm_version    = "london"
+```
+
 ### Environment Setup
 ```bash
 cd contracts/script/

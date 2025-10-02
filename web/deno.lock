@@ -7977,6 +7977,7 @@
         "npm:@types/node@20",
         "npm:@types/react-dom@18",
         "npm:@types/react@18",
+        "npm:autoprefixer@^10.4.21",
         "npm:encoding@~0.1.13",
         "npm:eslint-config-next@14.2.15",
         "npm:eslint@8",

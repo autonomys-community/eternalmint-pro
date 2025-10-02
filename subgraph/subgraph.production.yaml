@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: EternalMintNfts
-    network: autonomys-taurus
+    network: autonomys-mainnet
     source:
-      address: "0x8A7325f9eA80D65c8f69F3797F345Cc831EC01f4"
+      address: "0x2601FB64e5cA137f273Fa64c28056a040d132A1b"
       abi: EternalMintNfts
-      startBlock: 1988600
+      startBlock: 282110
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
