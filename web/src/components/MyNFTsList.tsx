@@ -68,10 +68,10 @@ export const MyNFTsList: React.FC = () => {
       const nfts: OwnedNFT[] = [];
 
       // Process all tokens in parallel instead of sequentially
-      const nftPromises = tokenIds.map(async (tokenIdBigInt, i) => {
+      const nftPromises = tokenIds.map(async (tokenIdBigInt: bigint, i: number) => {
         try {
           const tokenId = tokenIdBigInt.toString();
-          const balance = parseInt(balances[i].toString());
+          const balance = parseInt((balances[i] as bigint).toString());
 
           // Fetch CID
           const cidResponse = await fetch("/api/utils/contract-call", {
