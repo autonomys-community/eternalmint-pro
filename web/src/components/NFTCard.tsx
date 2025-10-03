@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_CONFIG } from "@/config/app";
 import { getStorageUrl } from "@/config/constants";
 import { useDepth } from "@/contexts/DepthContext";
 import { getImageOptimizationSettings, isLikelyAnimatedGif } from "@/utils/mediaUtils";
@@ -22,6 +23,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [modalNft, setModalNft] = useState(nft);
   const [imageError, setImageError] = useState(false);
+  const [addingToMetaMask, setAddingToMetaMask] = useState(false);
 
   // Check if the image is animated
   const isAnimated = useMemo(() => {
@@ -31,7 +33,10 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
 
   // Get optimization settings for the image
   const imageSettings = useMemo(() => {
-    return getImageOptimizationSettings(isAnimated ? 'image/gif' : undefined);
+    const settings = getImageOptimizationSettings(isAnimated ? 'image/gif' : undefined);
+    // Remove priority from settings since we set it explicitly as a prop
+    const { priority: _, ...settingsWithoutPriority } = settings;
+    return settingsWithoutPriority;
   }, [isAnimated]);
 
   // Handle quantity updates from the modal
@@ -50,6 +55,40 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
   const handleImageError = useCallback(() => {
     setImageError(true);
   }, []);
+
+  const handleAddToMetaMask = useCallback(async () => {
+    if (!nft.tokenId || !window.ethereum) {
+      alert('MetaMask not detected. Please install MetaMask to add tokens.');
+      return;
+    }
+
+    setAddingToMetaMask(true);
+    try {
+      const wasAdded = await window.ethereum.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC1155',
+          options: {
+            address: APP_CONFIG.contract.address,
+            tokenId: nft.tokenId,
+            symbol: nft.name || `NFT #${nft.tokenId}`,
+            image: nft.image,
+          },
+        },
+      });
+      
+      if (wasAdded) {
+        // Brief success feedback
+        setTimeout(() => setAddingToMetaMask(false), 1000);
+      } else {
+        setAddingToMetaMask(false);
+      }
+    } catch (error) {
+      console.error('Error adding token to MetaMask:', error);
+      setAddingToMetaMask(false);
+      alert('Failed to add token to MetaMask. Please try again.');
+    }
+  }, [nft.tokenId, nft.name, nft.image]);
 
   // Update modal NFT when the original NFT changes
   useEffect(() => {
@@ -226,13 +265,30 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
             </div>
 
             {/* Action Buttons */}
-            <div className="flex">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={() => setIsTransferModalOpen(true)}
                 disabled={nft.quantity === 0}
                 className={buttonClasses}
               >
                 {nft.quantity === 0 ? "No Tokens Available" : "Transfer Card"}
+              </button>
+              
+              <button
+                onClick={handleAddToMetaMask}
+                disabled={addingToMetaMask}
+                className="w-full px-6 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 hover:scale-105 shadow-lg font-medium flex items-center justify-center gap-2"
+              >
+                {addingToMetaMask ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    Add to MetaMask
+                  </>
+                )}
               </button>
             </div>
           </div>
