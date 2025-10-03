@@ -17,19 +17,19 @@
   resolved "https://registry.yarnpkg.com/@alloc/quick-lru/-/quick-lru-5.2.0.tgz#7bf68b20c0a350f936915fcae06f58e32007ce30"
   integrity sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==
 
-"@autonomys/asynchronous@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@autonomys/asynchronous/-/asynchronous-1.5.0.tgz#1e8063ae1004c4d2b8b817713382e9cffa7b27b2"
-  integrity sha512-0RRag6rMOCKR0pDdu/kInKO+HKzaVdwO6M6iVt/pOpqa3v5Zy/d8VdZTJ81S6D2Rc+zD5EiMdFFG325/LkdbgA==
+"@autonomys/asynchronous@^1.5.18":
+  version "1.5.18"
+  resolved "https://registry.yarnpkg.com/@autonomys/asynchronous/-/asynchronous-1.5.18.tgz#c0a65b9079bf1c4aa52be5cd64aefe35f72c001a"
+  integrity sha512-WAKEPrJemvVbyyvyGOQe/f5rs8u/GYb1kQLQAFurwf78sQJUQ2RM7xHzJ3ToW3rwJa+xAWE47tMqtoWQj2q1Yw==
   dependencies:
     stream-fork "^1.0.5"
 
-"@autonomys/auto-dag-data@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@autonomys/auto-dag-data/-/auto-dag-data-1.5.0.tgz#1c09d4f1a5fd9581d00e6c6be8a576e0e6d487e6"
-  integrity sha512-lK9D3XB8T+PrrnxAkauukrK6k0zaQW4H+bqQ+YOoPeo3oU0JBJBQUd8NB6BKDOgZ8yMA0r0kX74ygvYBCVQ48w==
+"@autonomys/auto-dag-data@^1.5.18":
+  version "1.5.18"
+  resolved "https://registry.yarnpkg.com/@autonomys/auto-dag-data/-/auto-dag-data-1.5.18.tgz#ab194cf3095f140af1a744d69a267bf581b18720"
+  integrity sha512-cGqJn5YIx7w6XoEGAj09zN0Nj2509Mbd8BSm7Q2mzG3y7Vmmfkg9u6LRj3UeI6qAmLD1mV7uYIL1kNdt+qpTIg==
   dependencies:
-    "@autonomys/asynchronous" "^1.5.0"
+    "@autonomys/asynchronous" "^1.5.18"
     "@ipld/dag-pb" "^4.1.3"
     "@peculiar/webcrypto" "^1.5.0"
     "@webbuf/blake3" "^3.0.26"
@@ -41,14 +41,14 @@
     protons "^7.6.0"
     protons-runtime "^5.5.0"
 
-"@autonomys/auto-drive@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@autonomys/auto-drive/-/auto-drive-1.5.0.tgz#d93c1b1a02cc3709bcf7a027446661af7df3b698"
-  integrity sha512-usAmv9casOy+YP1bhuH7WNPgChitvrBw3OzbPEvVvEungtdWTqd6VEb3pp6IAsLXORT64qoypuHaxaLDvqZ7+A==
+"@autonomys/auto-drive@^1.5.18":
+  version "1.5.18"
+  resolved "https://registry.yarnpkg.com/@autonomys/auto-drive/-/auto-drive-1.5.18.tgz#ee4c76a61da5f86ea9d2c500c8bf9586f6205810"
+  integrity sha512-ESbBbzgnQy0LeSbe4gTVtuK13OBbXLL90Rt+8IamlUxv+t6bT5Kf8UiOGblj8LDNySjBLyg7K2rTeDIaHlUN2g==
   dependencies:
-    "@autonomys/asynchronous" "^1.5.0"
-    "@autonomys/auto-dag-data" "^1.5.0"
-    "@autonomys/auto-utils" "^1.5.0"
+    "@autonomys/asynchronous" "^1.5.18"
+    "@autonomys/auto-dag-data" "^1.5.18"
+    "@autonomys/auto-utils" "^1.5.18"
     blockstore-core "^5.0.2"
     jszip "^3.10.1"
     mime-types "^3.0.1"
@@ -56,10 +56,10 @@
     stream "^0.0.3"
     zod "^3.24.2"
 
-"@autonomys/auto-utils@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@autonomys/auto-utils/-/auto-utils-1.5.0.tgz#f70e55a19647fb72f9ee1bf6ad18e2eefcf647c2"
-  integrity sha512-VjgHOtnRY2pu2Cthf25wg6T9O4X8EQUAevqQXdLun+0LQpt2XMkA2YBAK1glbgQZA5GeKMIzwcCt533FFvhxEg==
+"@autonomys/auto-utils@^1.5.18":
+  version "1.5.18"
+  resolved "https://registry.yarnpkg.com/@autonomys/auto-utils/-/auto-utils-1.5.18.tgz#b4eca2ba638e336670d43e9bd8c2acc00dcf06d1"
+  integrity sha512-R/jI3ZgUbbacU63DZfjYM+eK96Hahw6uLU2s3xn7mjxxCtDUWzABkDCVbPwPnijW+xqhQRk3TAUXaaot+0p/Og==
   dependencies:
     "@polkadot/api" "^15.8.1"
     "@polkadot/extension-dapp" "^0.58.6"
@@ -1015,6 +1015,15 @@
     "@polkadot/util-crypto" "13.5.1"
     tslib "^2.8.0"
 
+"@polkadot/keyring@^13.5.6":
+  version "13.5.6"
+  resolved "https://registry.yarnpkg.com/@polkadot/keyring/-/keyring-13.5.6.tgz#b26d0cba323bb0520826211317701aa540428406"
+  integrity sha512-Ybe6Mflrh96FKR5tfEaf/93RxJD7x9UigseNOJW6Yd8LF+GesdxrqmZD7zh+53Hb7smGQWf/0FCfwhoWZVgPUQ==
+  dependencies:
+    "@polkadot/util" "13.5.6"
+    "@polkadot/util-crypto" "13.5.6"
+    tslib "^2.8.0"
+
 "@polkadot/networks@13.5.1", "@polkadot/networks@^13.4.4":
   version "13.5.1"
   resolved "https://registry.yarnpkg.com/@polkadot/networks/-/networks-13.5.1.tgz#c93ed60e293747d70663008f0a6ed8f8aeeb21fd"
@@ -1154,7 +1163,7 @@
     "@scure/base" "^1.1.7"
     tslib "^2.8.0"
 
-"@polkadot/util-crypto@^13.5.6":
+"@polkadot/util-crypto@13.5.6", "@polkadot/util-crypto@^13.5.6":
   version "13.5.6"
   resolved "https://registry.yarnpkg.com/@polkadot/util-crypto/-/util-crypto-13.5.6.tgz#aef44d6c201d7c47897288aa268532f396e4cd5f"
   integrity sha512-1l+t5lVc9UWxvbJe7/3V+QK8CwrDPuQjDK6FKtDZgZCU0JRrjySOxV0J4PeDIv8TgXZtbIcQFVUhIsJTyKZZJQ==
