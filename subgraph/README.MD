@@ -1,316 +1,208 @@
-# EternalMint Pro Subgraph Deployment Guide
+# EternalMint Pro Subgraph
 
-This guide covers deploying and managing subgraphs for EternalMint Pro using The Graph Studio with official Autonomys network support.
+This subgraph indexes EternalMint Pro NFT contract events on the Autonomys Network for efficient querying via GraphQL.
 
-## Table of Contents
+## 🏗️ **Architecture**
 
-- [Prerequisites](#prerequisites)
-- [First-Time Setup](#first-time-setup)
-- [Deployment Environments](#deployment-environments)
-- [Initial Deployment](#initial-deployment)
-- [Updating After Contract Changes](#updating-after-contract-changes)
-- [Troubleshooting](#troubleshooting)
+- **Development/Staging**: Autonomys Chronos testnet → `eternalmint-pro-staging` studio  
+- **Production**: Autonomys mainnet → `eternalmint-pro` studio
 
-## Prerequisites
+## 🔧 **Initial Setup (One-Time)**
 
-- [Node.js](https://nodejs.org/) v16+ installed
-- [Yarn](https://yarnpkg.com/) or npm package manager
-- Access to [The Graph Studio](https://thegraph.com/studio/)
-- Wallet connected to The Graph Studio
-- EternalMint Pro contract deployed on target network
+### **1. Create Subgraphs in The Graph Studio**
 
-## First-Time Setup
+Before using the deployment scripts, you must create the subgraphs in [The Graph Studio](https://thegraph.com/studio/):
 
-### 1. Clone Repository and Install Dependencies
+1. **Go to**: https://thegraph.com/studio/
+2. **Click**: "Create a Subgraph" 
+3. **Create**: `eternalmint-pro-staging` (for dev/staging)
+4. **Create**: `eternalmint-pro` (for production)
+5. **Copy**: Deploy keys from each subgraph page
+
+### **2. Install Dependencies**
 
 ```bash
-# Clone the repository (if not already done)
-git clone <repository-url>
-cd eternalmint-pro/subgraph
-
-# Install dependencies
+cd subgraph
 yarn install
+```
+
+### **3. Authenticate CLI**
+
+```bash
+graph auth
+# When prompted, paste your deploy key from The Graph Studio
+# Get deploy key from: https://thegraph.com/studio/subgraph/[your-subgraph]/
+```
+
+### **4. Verify Setup**
+
+```bash
+yarn validate  # Check configuration files
+yarn status    # View current setup
+```
+
+## 🚀 **Quick Deployment**
+
+```bash
+cd subgraph
+
+# 1. Build subgraph (automated: codegen + build)
+yarn deploy:dev      # Builds for staging config
+yarn deploy:staging  # Builds for staging config
+yarn deploy:production # Builds for production config
+
+# 2. Deploy manually (gives you control)
+graph auth           # Authenticate (one-time)
+graph deploy eternalmint-pro-staging subgraph.staging.yaml  # Deploy to staging
 # or
-npm install
+graph deploy eternalmint-pro subgraph.production.yaml      # Deploy to production
 
-# Install Graph CLI globally
-yarn global add @graphprotocol/graph-cli
-# or
-npm install -g @graphprotocol/graph-cli
+# Deploy with new contract (auto-updates config + builds)
+node deploy.js staging 0x1234... 123456  # Then run graph deploy manually
 ```
 
-### 2. Create Subgraphs in The Graph Studio
+## 📋 **Complete Workflow: New Contract Deployment**
 
-1. Go to [The Graph Studio](https://thegraph.com/studio/)
-2. Connect your wallet
-3. Create the following subgraphs:
-   - **Development**: `eternalmint-pro-dev`
-   - **Staging**: `eternalmint-pro-staging` 
-   - **Production**: `eternalmint-pro`
+When deploying a new EternalMint contract instance:
 
-4. Note your deploy keys for each subgraph
+### **1. Deploy Contract**
+Deploy your contract using your preferred method and note the deployment details.
 
-### 3. Authenticate with The Graph Studio
-
+### **2. Get Deployment Info**
 ```bash
-# Authenticate using your deploy key
-yarn auth
-# Enter your deploy key when prompted
-
-# Or authenticate directly
-graph auth --studio <YOUR_DEPLOY_KEY>
+# Note the contract address and block number from deployment output
+CONTRACT_ADDRESS=0x1234...
+START_BLOCK=123456
 ```
 
-## Deployment Environments
-
-### Current Configuration
-
-| Environment | Network | Contract Address | Start Block |
-|-------------|---------|------------------|-------------|
-| Development | `autonomys-chronos` | `0x2601FB64e5cA137f273Fa64c28056a040d132A1b` | `282110` |
-| Staging | `autonomys-chronos` | `0x2601FB64e5cA137f273Fa64c28056a040d132A1b` | `282110` |
-| Production | `autonomys-mainnet` | `0x2601FB64e5cA137f273Fa64c28056a040d132A1b` | `282110` |
-
-### Configuration Files
-
-- **Development**: `subgraph.yaml`
-- **Staging**: `subgraph.staging.yaml`
-- **Production**: `subgraph.production.yaml`
-
-## Initial Deployment
-
-### Step 1: Generate Code and Build
-
+### **3. Deploy Subgraph**
 ```bash
-# Generate TypeScript code from schema and ABIs
-yarn codegen
-
-# Build the subgraph
-yarn build
+cd subgraph
+node deploy.js staging $CONTRACT_ADDRESS $START_BLOCK
 ```
 
-### Step 2: Deploy to Environments
+### **4. Update Frontend Config**
+Update `web/src/config/app.ts` with new contract address and subgraph URL.
 
-#### Deploy to Development
+## 🔧 **Manual Configuration**
+
+### **Environment Files**
+- `subgraph.staging.yaml` - Development/Staging (Chronos testnet)
+- `subgraph.production.yaml` - Production (Mainnet)
+
+### **Update Contract Address**
 ```bash
-yarn deploy:dev
+# Edit the appropriate .yaml file
+vim subgraph.staging.yaml
+
+# Update these fields:
+source:
+  address: "0xYourNewContractAddress"
+  startBlock: 123456
 ```
 
-#### Deploy to Staging
-```bash
-yarn deploy:staging
-```
-
-#### Deploy to Production
-```bash
-yarn deploy:production
-```
-
-### Step 3: Verify Deployment
-
-1. Check The Graph Studio dashboard
-2. Monitor indexing progress
-3. Test queries once synced
-
-## Updating After Contract Changes
-
-When you redeploy your smart contract, follow these steps to update the subgraph:
-
-### Step 1: Update Contract Information
-
-Edit the appropriate configuration file(s):
-
-**For Development (`subgraph.yaml`):**
-```yaml
-dataSources:
-  - kind: ethereum
-    name: EternalMintNfts
-    network: autonomys-chronos
-    source:
-      address: "NEW_CONTRACT_ADDRESS"
-      abi: EternalMintNfts
-      startBlock: NEW_START_BLOCK
-```
-
-**For Staging (`subgraph.staging.yaml`):**
-```yaml
-dataSources:
-  - kind: ethereum
-    name: EternalMintNfts
-    network: autonomys-chronos
-    source:
-      address: "NEW_CONTRACT_ADDRESS"
-      abi: EternalMintNfts
-      startBlock: NEW_START_BLOCK
-```
-
-**For Production (`subgraph.production.yaml`):**
-```yaml
-dataSources:
-  - kind: ethereum
-    name: EternalMintNfts
-    network: autonomys-mainnet
-    source:
-      address: "NEW_CONTRACT_ADDRESS"
-      abi: EternalMintNfts
-      startBlock: NEW_START_BLOCK
-```
-
-### Step 2: Update Networks Configuration
-
-Edit `networks.json`:
+### **Update networks.json**
 ```json
 {
   "autonomys-chronos": {
     "EternalMintNfts": {
-      "address": "NEW_CONTRACT_ADDRESS",
-      "startBlock": NEW_START_BLOCK
+      "address": "0xYourNewContractAddress", 
+      "startBlock": 123456
     }
   },
   "autonomys-mainnet": {
     "EternalMintNfts": {
-      "address": "NEW_CONTRACT_ADDRESS",
-      "startBlock": NEW_START_BLOCK
+      "address": "0xYourNewContractAddress",
+      "startBlock": 123456  
     }
   }
 }
 ```
 
-### Step 3: Update ABI (if contract interface changed)
+## 🛠️ **Development Commands**
 
-If you modified the contract interface:
-
-```bash
-# From the contracts directory
-cd ../contracts
-forge build --silent
-
-# Copy updated ABI to subgraph
-cat out/EternalMintNfts.sol/EternalMintNfts.json | jq '.abi' > ../subgraph/abis/EternalMintNfts.json
-
-# Return to subgraph directory
-cd ../subgraph
-```
-
-### Step 4: Regenerate and Deploy
-
-```bash
-# Regenerate code with new ABI/config
-yarn codegen
-
-# Build with new configuration
-yarn build
-
-# Deploy to appropriate environment(s)
-yarn deploy:dev
-yarn deploy:staging
-yarn deploy:production
-```
-
-## Manual Deployment Commands
-
-If you prefer manual commands over npm scripts:
-
-```bash
-# Development
-graph deploy --studio eternalmint-pro-dev
-
-# Staging
-graph deploy --studio eternalmint-pro-staging --file subgraph.staging.yaml
-
-# Production
-graph deploy --studio eternalmint-pro --file subgraph.production.yaml
-```
-
-## Troubleshooting
-
-### Common Issues
-
-#### 1. Network Not Supported
-If you see "network not supported" errors:
-- Verify Autonomys networks are supported in The Graph Studio
-- Contact The Graph team for network addition if needed
-- Consider using a hosted service temporarily
-
-#### 2. Start Block Too Early
-```
-Error: Failed to index: block not found
-```
-**Solution**: Increase the `startBlock` number in your configuration.
-
-#### 3. Contract Address Mismatch
-```
-Error: Contract not found at address
-```
-**Solution**: Verify the contract address and network in your configuration files.
-
-#### 4. ABI Mismatch
-```
-Error: Event signature mismatch
-```
-**Solution**: Update the ABI file with the latest contract build:
-```bash
-cd ../contracts && forge build --silent
-cat out/EternalMintNfts.sol/EternalMintNfts.json | jq '.abi' > ../subgraph/abis/EternalMintNfts.json
-```
-
-#### 5. Authentication Issues
-```
-Error: No deploy key provided
-```
-**Solution**: Re-authenticate with The Graph Studio:
-```bash
-yarn auth
-# Enter your deploy key
-```
-
-### Getting Help
-
-- **The Graph Discord**: [discord.gg/graphprotocol](https://discord.gg/graphprotocol)
-- **Documentation**: [thegraph.com/docs](https://thegraph.com/docs)
-- **Studio Dashboard**: [thegraph.com/studio](https://thegraph.com/studio)
-
-## Quick Reference
-
-### Essential Commands
 ```bash
 # Install dependencies
 yarn install
 
-# Authenticate
-yarn auth
-
-# Generate code
+# Generate code from schema
 yarn codegen
 
 # Build subgraph
 yarn build
 
-# Deploy to development
-yarn deploy:dev
+# Run tests
+yarn test
 
-# Deploy to staging
-yarn deploy:staging
-
-# Deploy to production
-yarn deploy:production
+# Authenticate with The Graph Studio (one-time setup)
+yarn auth
 ```
 
-### File Structure
-```
-subgraph/
-├── abis/
-│   └── EternalMintNfts.json      # Contract ABI
-├── src/
-│   └── eternalMintNfts.ts        # Event handlers
-├── schema.graphql                # GraphQL schema
-├── subgraph.yaml                 # Development config
-├── subgraph.staging.yaml         # Staging config
-├── subgraph.production.yaml      # Production config
-├── networks.json                 # Network configurations
-└── package.json                  # Dependencies and scripts
+## 📊 **The Graph Studio URLs**
+
+- **Development/Staging**: https://thegraph.com/studio/subgraph/eternalmint-pro-staging/
+- **Production**: https://thegraph.com/studio/subgraph/eternalmint-pro/
+
+## 🔍 **Troubleshooting**
+
+### **Deployment Fails**
+
+**"Subgraph not found" error:**
+```bash
+# Make sure subgraph exists in The Graph Studio first
+# Visit: https://thegraph.com/studio/
+# Create: eternalmint-pro-staging and eternalmint-pro
 ```
 
----
+**Authentication issues:**
+```bash
+# Re-authenticate with fresh deploy key
+graph auth
+# Get deploy key from: https://thegraph.com/studio/subgraph/[your-subgraph]/
+```
 
-**Current Contract**: `0x2601FB64e5cA137f273Fa64c28056a040d132A1b` (Block: `282110`)
+**Contract verification:**
+```bash
+# Verify contract address and start block
+cast call $CONTRACT_ADDRESS "name()" --rpc-url $RPC_URL
+
+# Check if start block exists
+cast block $START_BLOCK --rpc-url $RPC_URL
+```
+
+### **Subgraph Not Syncing**
+- Verify contract address is correct
+- Ensure start block is not too early (before contract deployment)
+- Check The Graph Studio for indexing errors
+- Verify network name matches Autonomys network identifiers
+
+### **Schema Changes**
+```bash
+# After modifying schema.graphql
+yarn codegen
+yarn build
+yarn deploy:staging  # Test first
+```
+
+## 📝 **Notes**
+
+- Always deploy to staging before production
+- Start block should be the block where the contract was deployed
+- Contract address must match exactly (case-sensitive)
+- Network names: `autonomys-chronos` (testnet), `autonomys-mainnet` (mainnet)
+- The deployment script automatically updates both `networks.json` and `.yaml` files
+
+## 🔗 **Integration**
+
+The subgraph provides GraphQL endpoints used by the frontend:
+
+```typescript
+// web/src/config/app.ts
+CONTRACT_DEPLOYMENTS = {
+  staging: {
+    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.1'
+  }
+}
+```
+
+Update the subgraph URL in the frontend config after each deployment to match the new version.

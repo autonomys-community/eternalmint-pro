@@ -3,15 +3,22 @@
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
+    "codegen:staging": "graph codegen subgraph.staging.yaml", 
+    "codegen:production": "graph codegen subgraph.production.yaml",
     "build": "graph build",
-    "auth": "graph auth --studio",
-    "deploy:dev": "graph deploy --studio eternalmint-pro-dev",
-    "deploy:staging": "graph deploy --studio eternalmint-pro-staging --file subgraph.staging.yaml",
-    "deploy:production": "graph deploy --studio eternalmint-pro --file subgraph.production.yaml",
+    "build:staging": "graph build subgraph.staging.yaml",
+    "build:production": "graph build subgraph.production.yaml",
+    "auth": "graph auth",
+    "deploy": "node deploy.js",
+    "deploy:dev": "node deploy.js dev",
+    "deploy:staging": "node deploy.js staging", 
+    "deploy:production": "node deploy.js production",
     "create-local": "graph create --node http://localhost:8020/ eternalmint-pro",
-    "remove-local": "graph remove --node http://localhost:8020/ eternalmint-pro",
+    "remove-local": "graph remove --node http://localhost:8020/ eternalmint-pro", 
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 eternalmint-pro",
-    "test": "graph test"
+    "test": "graph test",
+    "validate": "node validate-config.js",
+    "status": "node status.js"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.97.1",
