@@ -24,7 +24,7 @@ contract EternalMintNftsTest is Test {
         nonAdmin = address(0x2);
         nftCreator = address(0x3); // Address to act as the NFT creator in tests
 
-        eternalMintNfts = new EternalMintNfts("https://staging.eternalmintpro.xyz/api/cid/");
+        eternalMintNfts = new EternalMintNfts();
     }
 
     /**
@@ -254,7 +254,7 @@ contract EternalMintNftsTest is Test {
         string memory tokenUri = eternalMintNfts.uri(tokenId);
 
         // Assert: Verify the URI matches the expected format
-        string memory expectedUri = string(abi.encodePacked("https://staging.eternalmintpro.xyz/api/cid/", cid));
+        string memory expectedUri = string(abi.encodePacked("https://gateway.autonomys.xyz/file/", cid));
         assertEq(tokenUri, expectedUri, "URI should match the expected format with CID");
     }
 
@@ -271,40 +271,14 @@ contract EternalMintNftsTest is Test {
     }
 
     /**
-     * @notice Tests that the base URI can be retrieved.
+     * @notice Tests that the gateway URL can be retrieved.
      */
-    function test_GetBaseURI() public view {
-        // Act: Get the base URI
-        string memory baseUri = eternalMintNfts.getBaseURI();
+    function test_GetGatewayUrl() public view {
+        // Act: Get the gateway URL
+        string memory gatewayUrl = eternalMintNfts.getGatewayUrl();
 
-        // Assert: Verify it matches what was set in constructor
-        assertEq(baseUri, "https://staging.eternalmintpro.xyz/api/cid/", "Base URI should match constructor value");
+        // Assert: Verify it matches the expected fixed gateway URL
+        assertEq(gatewayUrl, "https://gateway.autonomys.xyz/file/", "Gateway URL should match the fixed value");
     }
 
-    /**
-     * @notice Tests that admin can update the base URI.
-     */
-    function test_AdminCanSetBaseURI() public {
-        // Arrange: New base URI
-        string memory newBaseUri = "https://new.eternalmintpro.xyz/api/cid/";
-
-        // Act: Admin updates base URI
-        eternalMintNfts.setBaseURI(newBaseUri);
-
-        // Assert: Verify the base URI was updated
-        assertEq(eternalMintNfts.getBaseURI(), newBaseUri, "Base URI should be updated");
-    }
-
-    /**
-     * @notice Tests that non-admin cannot update the base URI.
-     */
-    function test_NonAdminCannotSetBaseURI() public {
-        // Arrange: New base URI
-        string memory newBaseUri = "https://malicious.com/api/cid/";
-
-        // Act & Assert: Expect the function to revert when called by non-admin
-        vm.prank(nonAdmin);
-        vm.expectRevert();
-        eternalMintNfts.setBaseURI(newBaseUri);
-    }
 }

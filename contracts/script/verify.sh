@@ -15,7 +15,6 @@ forge verify-contract  \
     --compiler-version 0.8.30  \
     --watch  \
     --num-of-optimizations 20000 \
-    --constructor-args $(cast abi-encode "constructor(string)" "$BASE_URI") \
     $CONTRACT_ADDRESS  \
     src/EternalMintNfts.sol:EternalMintNfts
 

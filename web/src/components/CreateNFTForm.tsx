@@ -1,7 +1,7 @@
 "use client";
 
-import { APP_CONFIG } from "@/config/app";
-import { getImageSizeErrorMessage, getImageTypeErrorMessage, getStorageUrl, isValidImageSize, isValidImageType, SUPPORTED_IMAGE_TYPES } from "@/config/constants";
+import { APP_CONFIG, getGatewayUrl } from "@/config/app";
+import { getImageSizeErrorMessage, getImageTypeErrorMessage, isValidImageSize, isValidImageType, SUPPORTED_IMAGE_TYPES } from "@/config/constants";
 import { useHasMinterRole } from "@/hooks/useHasMinterRole";
 import { getImageOptimizationSettings, isAnimatedGif } from "@/utils/mediaUtils";
 import { sendGAEvent } from "@next/third-parties/google";
@@ -365,7 +365,7 @@ export const CreateNFTForm: React.FC = () => {
           <p className="mt-4 text-green-500 text-sm">
             Image CID: {nftDetails?.cids?.image}{" "}
             <Link
-                              href={getStorageUrl(nftDetails?.cids?.image || "")}
+                              href={getGatewayUrl(nftDetails?.cids?.image || "")}
               className="text-blue-500 hover:underline"
               target="_blank"
             >
@@ -375,7 +375,7 @@ export const CreateNFTForm: React.FC = () => {
           <p className="mt-4 text-green-500 text-sm">
             Metadata CID: {nftDetails?.cids?.metadata}{" "}
             <Link
-                              href={getStorageUrl(nftDetails?.cids?.metadata || "")}
+                              href={getGatewayUrl(nftDetails?.cids?.metadata || "")}
               className="text-blue-500 hover:underline"
               target="_blank"
             >

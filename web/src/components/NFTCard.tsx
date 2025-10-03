@@ -1,7 +1,6 @@
 "use client";
 
-import { APP_CONFIG } from "@/config/app";
-import { getStorageUrl } from "@/config/constants";
+import { APP_CONFIG, getGatewayUrl } from "@/config/app";
 import { useDepth } from "@/contexts/DepthContext";
 import { getImageOptimizationSettings, isLikelyAnimatedGif } from "@/utils/mediaUtils";
 import Image from "next/image";
@@ -25,6 +24,16 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
   const [imageError, setImageError] = useState(false);
   const [addingToMetaMask, setAddingToMetaMask] = useState(false);
 
+  // Helper function to validate image URL
+  const isValidImageUrl = (url: string): boolean => {
+    try {
+      const parsedUrl = new URL(url);
+      return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
   // Check if the image is animated
   const isAnimated = useMemo(() => {
     if (!nft?.image) return false;
@@ -36,7 +45,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
     const settings = getImageOptimizationSettings(isAnimated ? 'image/gif' : undefined);
     // Remove priority from settings since we set it explicitly as a prop
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { priority, ...settingsWithoutPriority } = settings;
+    const { priority: _priority, ...settingsWithoutPriority } = settings;
     return settingsWithoutPriority;
   }, [isAnimated]);
 
@@ -98,8 +107,8 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
     }
   }, [nft, isTransferModalOpen]);
 
-  // Early return if nft is not provided (after all hooks)
-  if (!nft) {
+  // Early return if nft is not properly loaded (after all hooks)
+  if (!nft || !nft.id) {
     return null;
   }
 
@@ -186,7 +195,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
         <div className="relative p-6 flex flex-col flex-1">
           {/* Image Section */}
           <div className={imageContainerClasses}>
-            {imageError || !nft.image ? (
+            {imageError || !nft.image || !isValidImageUrl(nft.image) ? (
               <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                 <div className="text-center">
                   <div className="text-4xl mb-2">🖼️</div>
@@ -246,7 +255,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
               {/* Links */}
               <div className="flex flex-col gap-2">
                 <Link
-                  href={getStorageUrl(nft.cid)}
+                  href={getGatewayUrl(nft.cid)}
                   target="_blank"
                   className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors group"
                 >

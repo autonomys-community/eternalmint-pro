@@ -44,10 +44,6 @@ cp .env.sample .env
 Edit `.env` file with your configuration:
 - Set `PRIVATE_KEY`
 - Set `RPC_URL` (HTTP/S endpoint)
-- Set `BASE_URI` (metadata API endpoint for your environment)
-  - Development: `http://localhost:3006/api/cid/`
-  - Staging: `https://staging.eternalmint.xyz/api/cid/`
-  - Production: `https://eternalmint.xyz/api/cid/`
 
 ### Deploy Contract
 ```bash

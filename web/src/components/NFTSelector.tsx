@@ -1,7 +1,6 @@
 "use client";
 
-import { APP_CONFIG } from "@/config/app";
-import { getMetadataApiUrl, getStorageApiUrl } from "@/config/constants";
+import { APP_CONFIG, getGatewayUrl } from "@/config/app";
 import { useHasMinterRole } from "@/hooks/useHasMinterRole";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -157,12 +156,12 @@ export default function NFTSelector({ onNFTSelected, distributionMode, onDistrib
           let name = '';
           let description = '';
           try {
-            // For metadata CIDs from contract, construct URL directly using current storage network
-            const metadataApiUrl = getMetadataApiUrl(cidData.result);
-            const metadataResponse = await fetch(metadataApiUrl);
+            // Fetch metadata directly from gateway
+            const metadataUrl = getGatewayUrl(cidData.result);
+            const metadataResponse = await fetch(metadataUrl);
             if (metadataResponse.ok) {
               const metadata = await metadataResponse.json();
-              imageUrl = metadata.image ? getStorageApiUrl(metadata.image) : "";
+              imageUrl = metadata.image || "";
               name = metadata.name || '';
               description = metadata.description || '';
             }

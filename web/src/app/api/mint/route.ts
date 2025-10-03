@@ -1,5 +1,5 @@
-import { APP_CONFIG } from "@/config/app";
-import { getImageSizeErrorMessage, getImageTypeErrorMessage, getStorageUrl, isValidImageSize, isValidImageType } from "@/config/constants";
+import { APP_CONFIG, getGatewayUrl, getHostUrl } from "@/config/app";
+import { getImageSizeErrorMessage, getImageTypeErrorMessage, isValidImageSize, isValidImageType } from "@/config/constants";
 import { createAutoDriveApi } from "@autonomys/auto-drive";
 import { Contract, JsonRpcProvider, Wallet } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
@@ -100,12 +100,16 @@ export const POST = async (req: NextRequest) => {
     console.log("Final Upload Response:", uploadedFileCid);
 
     const imageCid = uploadedFileCid?.toString() || "";
-    mediaUrl = getStorageUrl(imageCid); // For response only
+    mediaUrl = getGatewayUrl(imageCid); // For response only
+
+    // Set external_url to point to the user's NFT collection page
+    const hostUrl = getHostUrl(req);
+    const externalUrl = externalLink || `${hostUrl}/my-nfts`;
 
     const metadata = {
       description,
-      external_url: externalLink,
-      image: imageCid,
+      external_url: externalUrl,
+      image: mediaUrl,
       name,
       attributes: [],
     };

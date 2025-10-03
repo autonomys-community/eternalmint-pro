@@ -26,8 +26,8 @@ const getEnvironment = (): Environment => {
 
 export const ENV = getEnvironment();
 
-// Auto-detect host URL
-const getHostUrl = (): string => {
+// Auto-detect host URL for both client and server contexts
+export const getHostUrl = (req?: Request): string => {
   // If explicitly set, use that (only override we keep for host)
   if (process.env.NEXT_PUBLIC_HOST) {
     return process.env.NEXT_PUBLIC_HOST;
@@ -44,6 +44,15 @@ const getHostUrl = (): string => {
     return window.location.origin;
   }
 
+  // Server-side: try to get from request headers first (for API routes)
+  if (req) {
+    const host = req.headers.get('host');
+    if (host) {
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      return `${protocol}://${host}`;
+    }
+  }
+
   // Server-side: use Vercel environment variables or fallback
   const vercelUrl = process.env.VERCEL_URL;
   if (vercelUrl) {
@@ -51,7 +60,7 @@ const getHostUrl = (): string => {
   }
 
   // Fallback to known production URL
-  return 'https://eternalmint-pro.vercel.app';
+  return 'https://eternalmintpro.xyz';
 };
 
 // EVM Network configurations (blockchain infrastructure only)
@@ -96,16 +105,16 @@ export const CONTRACT_DEPLOYMENTS = {
   development: {
     evmNetwork: 'chronos' as NetworkName,
     storageNetwork: 'mainnet' as StorageNetworkName,
-    contractAddress: '0x2601FB64e5cA137f273Fa64c28056a040d132A1b',
-    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.1',
+    contractAddress: '0x0fC1D8A49417eE6d211909e236686708d01d356E',
+    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.4',
     version: '1.0.0',
     deployedAt: '2025-06-25', // Update with actual deployment date
   },
   staging: {
     evmNetwork: 'chronos' as NetworkName,
     storageNetwork: 'mainnet' as StorageNetworkName,
-    contractAddress: '0x2601FB64e5cA137f273Fa64c28056a040d132A1b',
-    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.1',
+    contractAddress: '0x0fC1D8A49417eE6d211909e236686708d01d356E',
+    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.4',
     version: '1.0.0',
     deployedAt: '2025-06-25', // Update with actual deployment date
   },
@@ -231,10 +240,6 @@ export const APP_CONFIG = {
 } as const;
 
 // Helper functions
-export const getStorageApiUrl = (storageNetworkName: StorageNetworkName = APP_CONFIG.storage.networkName): string => {
-  return STORAGE_NETWORKS[storageNetworkName].apiUrl;
-};
-
 export const isValidImageSize = (sizeInBytes: number): boolean => {
   const maxSizeBytes = APP_CONFIG.storage.maxImageSizeMB * 1024 * 1024;
   return sizeInBytes <= maxSizeBytes;
@@ -264,4 +269,9 @@ export const isProduction = ENV === 'production';
 export const CURRENT_CHAIN = CURRENT_EVM_NETWORK;
 
 // Export current contract deployment for easy access
-export const CURRENT_CONTRACT = contractDeployment; 
+export const CURRENT_CONTRACT = contractDeployment;
+
+// Auto Drive gateway URL helper
+export const getGatewayUrl = (cid: string): string => {
+  return `https://gateway.autonomys.xyz/file/${cid}`;
+}; 

@@ -5,15 +5,9 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'demo.auto-drive.autonomys.xyz',
+        hostname: 'gateway.autonomys.xyz',
         port: '',
-        pathname: '/api/objects/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3006',
-        pathname: '/api/cid/**',
+        pathname: '/file/**',
       },
     ],
   },

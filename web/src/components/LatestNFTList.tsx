@@ -1,7 +1,6 @@
 "use client";
 
-import { APP_CONFIG } from "@/config/app";
-import { getMetadataApiUrl, getStorageApiUrl } from "@/config/constants";
+import { APP_CONFIG, getGatewayUrl } from "@/config/app";
 import { useEffect, useRef, useState } from "react";
 import { NFT, NftMinted } from "../types";
 import { NftContainer } from "./NftContainer";
@@ -53,12 +52,12 @@ export const LatestNFTList: React.FC = () => {
         let description = "";
         
         try {
-          // Fetch metadata for this NFT
-          const metadataApiUrl = getMetadataApiUrl(item.cid);
-          const metadataResponse = await fetch(metadataApiUrl);
+          // Fetch metadata directly from gateway
+          const metadataUrl = getGatewayUrl(item.cid);
+          const metadataResponse = await fetch(metadataUrl);
           if (metadataResponse.ok) {
             const metadata = await metadataResponse.json();
-            imageUrl = metadata.image ? getStorageApiUrl(metadata.image) : "";
+            imageUrl = metadata.image || "";
             name = metadata.name || "";
             description = metadata.description || "";
           }

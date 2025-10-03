@@ -1,6 +1,6 @@
 "use client";
 
-import { getMetadataApiUrl, getStorageApiUrl } from "@/config/constants";
+import { getGatewayUrl } from "@/config/app";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAccount } from "wagmi";
@@ -95,11 +95,12 @@ export const MyNFTsList: React.FC = () => {
           let description = "";
 
           try {
-            const metadataApiUrl = getMetadataApiUrl(cid);
-            const metadataResponse = await fetch(metadataApiUrl);
+            // Fetch metadata directly from gateway
+            const metadataUrl = getGatewayUrl(cid);
+            const metadataResponse = await fetch(metadataUrl);
             if (metadataResponse.ok) {
               const metadata = await metadataResponse.json();
-              imageUrl = metadata.image ? getStorageApiUrl(metadata.image) : "";
+              imageUrl = metadata.image || "";
               name = metadata.name || `NFT ${tokenId}`;
               description = metadata.description || "";
             }

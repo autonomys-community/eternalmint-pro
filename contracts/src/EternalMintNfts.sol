@@ -7,8 +7,8 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 contract EternalMintNfts is ERC1155(""), AccessControl, ReentrancyGuard {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    // Base URI for metadata
-    string private _baseURI;
+    // Static gateway URL for Auto Drive
+    string private constant GATEWAY_URL = "https://gateway.autonomys.xyz/file/";
 
     // Struct to store token details
     struct Token {
@@ -44,12 +44,10 @@ contract EternalMintNfts is ERC1155(""), AccessControl, ReentrancyGuard {
     );
 
     /**
-     * @dev Constructor sets the base URI for metadata endpoints.
-     * @param baseURI The base URI for the metadata API (e.g., "https://eternalmintpro.xyz/api/cid/")
+     * @dev Constructor sets up admin role.
      */
-    constructor(string memory baseURI) {
+    constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _baseURI = baseURI;
     }
 
     // Modifiers
@@ -356,23 +354,15 @@ contract EternalMintNfts is ERC1155(""), AccessControl, ReentrancyGuard {
      */
     function uri(uint256 tokenId) public view override returns (string memory) {
         require(tokens[tokenId].supply > 0, "Token does not exist");
-        return string(abi.encodePacked(_baseURI, tokens[tokenId].cid));
+        return string(abi.encodePacked(GATEWAY_URL, tokens[tokenId].cid));
     }
 
     /**
-     * @dev Returns the base URI for metadata.
-     * @return The current base URI string.
+     * @dev Returns the gateway URL for metadata.
+     * @return The fixed gateway URL string.
      */
-    function getBaseURI() public view returns (string memory) {
-        return _baseURI;
-    }
-
-    /**
-     * @dev Updates the base URI for metadata. Only admin can call this.
-     * @param newBaseURI The new base URI to set.
-     */
-    function setBaseURI(string memory newBaseURI) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        _baseURI = newBaseURI;
+    function getGatewayUrl() public pure returns (string memory) {
+        return GATEWAY_URL;
     }
 
     /**

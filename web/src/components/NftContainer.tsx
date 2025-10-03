@@ -1,6 +1,6 @@
 "use client";
 
-import { getStorageUrl } from "@/config/constants";
+import { getGatewayUrl } from "@/config/app";
 import { getImageOptimizationSettings, isLikelyAnimatedGif } from "@/utils/mediaUtils";
 import Image from "next/image";
 import Link from "next/link";
@@ -88,7 +88,7 @@ export const NftContainer: React.FC<NftContainerProps> = ({ nft, showTransferBut
           <p className="text-sm text-gray-400 break-all">
             Metadata:{" "}
             <Link
-              href={getStorageUrl(nft.cid)}
+              href={getGatewayUrl(nft.cid)}
               target="_blank"
             >
               {nft.cid.slice(0, 6)}...{nft.cid.slice(-6)}
@@ -98,7 +98,7 @@ export const NftContainer: React.FC<NftContainerProps> = ({ nft, showTransferBut
             <p className="text-sm text-gray-400 break-all">
               Image:{" "}
               <Link
-                href={getStorageUrl(imageCid)}
+                href={getGatewayUrl(imageCid)}
                 target="_blank"
               >
                 {imageCid.slice(0, 6)}...{imageCid.slice(-6)}
