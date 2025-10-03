@@ -13,9 +13,10 @@ import { TransferModal } from "./TransferModal";
 interface NFTCardProps {
   nft: NFT;
   onQuantityUpdate?: (tokenId: string, newQuantity: number) => void;
+  priority?: boolean; // For above-the-fold images
 }
 
-export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
+export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priority = false }) => {
   const { depthEnabled } = useDepth();
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -158,6 +159,8 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
                   src={nft.image}
                   alt={nft.name || "NFT"}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority={priority}
                   className="object-cover hover:scale-110 transition-transform duration-300 cursor-pointer"
                   {...imageSettings}
                   onLoad={handleImageLoad}

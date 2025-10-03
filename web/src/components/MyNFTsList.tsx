@@ -268,7 +268,7 @@ export const MyNFTsList: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 xl:grid-cols-2 items-stretch auto-rows-fr">
-        {ownedNFTs.map((nft) => (
+        {ownedNFTs.map((nft, index) => (
           <NFTCard 
             key={nft.id} 
             nft={{
@@ -282,6 +282,7 @@ export const MyNFTsList: React.FC = () => {
               tokenId: nft.tokenId
             } as NFT}
             onQuantityUpdate={updateNFTQuantity}
+            priority={index < 2} // Priority for first 2 NFTs (above the fold)
           />
         ))}
       </div>
