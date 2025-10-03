@@ -1,6 +1,7 @@
 "use client";
 
 import { APP_CONFIG } from "@/config/app";
+import { getMetadataApiUrl, getStorageApiUrl } from "@/config/constants";
 import { useEffect, useState } from "react";
 import { NFT, NftMinted } from "../types";
 import { NftContainer } from "./NftContainer";
@@ -33,14 +34,39 @@ export const LatestNFTList: React.FC = () => {
       });
       const { data } = await response.json();
       console.log("data", data);
-      const transformedNfts = data.nftMinteds.map((item: NftMinted) => ({
-        id: item.id,
-        image: "",
-        name: "",
-        description: "",
-        quantity: item.supply,
-        cid: item.cid,
-      }));
+      
+      // Fetch metadata for each NFT
+      const transformedNfts: NFT[] = [];
+      for (const item of data.nftMinteds) {
+        let imageUrl = "";
+        let name = "";
+        let description = "";
+        
+        try {
+          // Fetch metadata for this NFT
+          const metadataApiUrl = getMetadataApiUrl(item.cid);
+          const metadataResponse = await fetch(metadataApiUrl);
+          if (metadataResponse.ok) {
+            const metadata = await metadataResponse.json();
+            imageUrl = metadata.image ? getStorageApiUrl(metadata.image) : "";
+            name = metadata.name || "";
+            description = metadata.description || "";
+          }
+        } catch (error) {
+          console.error(`Error fetching metadata for NFT ${item.id}:`, error);
+        }
+        
+        transformedNfts.push({
+          id: item.id,
+          image: imageUrl,
+          name,
+          description,
+          creator: item.creator,
+          quantity: item.supply,
+          cid: item.cid,
+        });
+      }
+      
       setNfts(transformedNfts);
     };
 

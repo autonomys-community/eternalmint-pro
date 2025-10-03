@@ -1,12 +1,12 @@
 "use client";
 
-import { getMetadataApiUrl, getStorageApiUrl, getStorageUrl } from "@/config/constants";
+import { getStorageUrl } from "@/config/constants";
 import { useDepth } from "@/contexts/DepthContext";
 import { getImageOptimizationSettings, isLikelyAnimatedGif } from "@/utils/mediaUtils";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Metadata, NFT } from "../types";
+import { NFT } from "../types";
 import { ImageModal } from "./ImageModal";
 import { TransferModal } from "./TransferModal";
 
@@ -17,68 +17,21 @@ interface NFTCardProps {
 
 export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
   const { depthEnabled } = useDepth();
-  const [metadata, setMetadata] = useState<Metadata | null>(null);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [modalNft, setModalNft] = useState(nft);
-  const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
   // Check if the image is animated
   const isAnimated = useMemo(() => {
-    if (!metadata?.image) return false;
-    return isLikelyAnimatedGif(metadata.image);
-  }, [metadata?.image]);
+    if (!nft?.image) return false;
+    return isLikelyAnimatedGif(nft.image);
+  }, [nft?.image]);
 
   // Get optimization settings for the image
   const imageSettings = useMemo(() => {
     return getImageOptimizationSettings(isAnimated ? 'image/gif' : undefined);
   }, [isAnimated]);
-
-  const handleLoadMetadata = useCallback(async (cid: string) => {
-    try {
-      // Use configurable metadata API URL instead of hardcoded "taurus"
-      const metadataApiUrl = getMetadataApiUrl(cid);
-      const res = await fetch(metadataApiUrl);
-      
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
-      
-      const metadata = await res.json();
-      // Use configurable storage API URL instead of hardcoded parsing
-      const imageUrl = metadata.image ? getStorageApiUrl(metadata.image) : "";
-      
-      return {
-        ...metadata,
-        image: imageUrl,
-      };
-    } catch (error) {
-      console.error("Error loading metadata", error);
-      throw error;
-    }
-  }, []);
-
-  useEffect(() => {
-    // Extract metadata CID consistently with other components
-    const metadataCid = nft?.cid ? nft.cid.split("/").pop() : null;
-    if (metadataCid) {
-      handleLoadMetadata(metadataCid)
-        .then(setMetadata)
-        .catch(console.error)
-        .finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
-    }
-  }, [nft.cid, handleLoadMetadata]);
-
-  // Update modal NFT when the original NFT changes
-  useEffect(() => {
-    if (!isTransferModalOpen) {
-      setModalNft(nft);
-    }
-  }, [nft, isTransferModalOpen]);
 
   // Handle quantity updates from the modal
   const handleQuantityUpdate = useCallback((tokenId: string, newQuantity: number) => {
@@ -96,6 +49,18 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
   const handleImageError = useCallback(() => {
     setImageError(true);
   }, []);
+
+  // Update modal NFT when the original NFT changes
+  useEffect(() => {
+    if (!isTransferModalOpen && nft) {
+      setModalNft(nft);
+    }
+  }, [nft, isTransferModalOpen]);
+
+  // Early return if nft is not provided (after all hooks)
+  if (!nft) {
+    return null;
+  }
 
   // Depth effect class configurations
   const stackedCardClasses = depthEnabled 
@@ -180,11 +145,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
         <div className="relative p-6 flex flex-col flex-1">
           {/* Image Section */}
           <div className={imageContainerClasses}>
-            {isLoading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
-              </div>
-            ) : imageError || !metadata?.image ? (
+            {imageError || !nft.image ? (
               <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                 <div className="text-center">
                   <div className="text-4xl mb-2">🖼️</div>
@@ -194,8 +155,8 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
             ) : (
               <>
                 <Image
-                  src={metadata.image}
-                  alt={metadata.name || "NFT"}
+                  src={nft.image}
+                  alt={nft.name || "NFT"}
                   fill
                   className="object-cover hover:scale-110 transition-transform duration-300 cursor-pointer"
                   {...imageSettings}
@@ -227,13 +188,13 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
           <div className="flex-1 flex flex-col">
             {/* Title */}
             <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-blue-300 transition-colors">
-              {metadata?.name || `NFT #${nft.tokenId}`}
+              {nft.name || `NFT #${nft.tokenId}`}
             </h3>
 
             {/* Description */}
-            {metadata?.description && (
+            {nft.description && (
               <p className="text-base text-gray-300 mb-4 line-clamp-3 flex-1 leading-relaxed">
-                {metadata.description}
+                {nft.description}
               </p>
             )}
 
@@ -252,18 +213,6 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
                   <span className="hover:underline">View Metadata</span>
                 </Link>
                 
-                {metadata?.external_url && (
-                  <Link
-                    href={metadata.external_url}
-                    target="_blank"
-                    className="inline-flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors group"
-                  >
-                    <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                    </svg>
-                    <span className="hover:underline">Visit Website</span>
-                  </Link>
-                )}
               </div>
               
               {nft.quantity === 0 && (
@@ -305,22 +254,22 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
         nft={{
           id: modalNft.id,
           tokenId: modalNft.tokenId || "0",
-          name: metadata?.name || `NFT ${modalNft.id}`,
+          name: modalNft.name || `NFT ${modalNft.id}`,
           quantity: modalNft.quantity,
           cid: modalNft.cid,
-          image: metadata?.image || ""
+          image: modalNft.image || ""
         }}
         onQuantityUpdate={handleQuantityUpdate}
       />
 
       {/* Image Modal */}
-      {metadata?.image && (
+      {nft.image && (
         <ImageModal
           isOpen={isImageModalOpen}
           onClose={() => setIsImageModalOpen(false)}
-          imageSrc={metadata.image}
-          imageAlt={metadata.name || "NFT"}
-          title={metadata.name}
+          imageSrc={nft.image}
+          imageAlt={nft.name || "NFT"}
+          title={nft.name}
           mimeType={isAnimated ? 'image/gif' : undefined}
         />
       )}

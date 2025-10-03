@@ -1,8 +1,8 @@
 export type NFT = {
   id: string;
-  image: string;
-  name: string;
-  description: string;
+  image?: string;
+  name?: string;
+  description?: string;
   creator: string;
   quantity: number;
   cid: string;

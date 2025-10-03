@@ -14,7 +14,9 @@ interface NFT {
   balance: number;
   creator: string;
   canDistribute: boolean;
-  imageUrl?: string; // Add imageUrl field
+  imageUrl?: string;
+  name?: string;
+  description?: string;
 }
 
 interface SelectedNFT {
@@ -152,12 +154,18 @@ export default function NFTSelector({ onNFTSelected, distributionMode, onDistrib
 
           // Fetch metadata to get image URL
           let imageUrl = '';
+          let name = '';
+          let description = '';
           try {
             // For metadata CIDs from contract, construct URL directly using current storage network
             const metadataApiUrl = getMetadataApiUrl(cidData.result);
             const metadataResponse = await fetch(metadataApiUrl);
-            const metadata = await metadataResponse.json();
-            imageUrl = metadata.image ? getStorageApiUrl(metadata.image) : "";
+            if (metadataResponse.ok) {
+              const metadata = await metadataResponse.json();
+              imageUrl = metadata.image ? getStorageApiUrl(metadata.image) : "";
+              name = metadata.name || '';
+              description = metadata.description || '';
+            }
           } catch (error) {
             console.error(`Error fetching metadata for token ${tokenIds[i]}:`, error);
           }
@@ -169,7 +177,9 @@ export default function NFTSelector({ onNFTSelected, distributionMode, onDistrib
             balance: parseInt(balances[i].toString()),
             creator: creatorData.result,
             canDistribute: canDistributeData.result === "true",
-            imageUrl
+            imageUrl,
+            name,
+            description
           };
 
           // Only include NFTs the user can distribute
@@ -307,7 +317,13 @@ export default function NFTSelector({ onNFTSelected, distributionMode, onDistrib
               
               {/* NFT Info */}
               <div className="text-white">
-                <p className="font-semibold mb-1">Token ID: {nft.tokenId.slice(0, 8)}...</p>
+                {nft.name && (
+                  <p className="font-semibold mb-1">{nft.name}</p>
+                )}
+                {nft.description && (
+                  <p className="text-sm text-gray-300 mb-2 line-clamp-2">{nft.description}</p>
+                )}
+                <p className="text-xs text-gray-400 mb-1">Token ID: {nft.tokenId.slice(0, 8)}...</p>
                 <p className="text-sm text-gray-300 mb-1">Total Supply: {nft.supply}</p>
                 <p className="text-sm text-gray-300 mb-1">Your Balance: {nft.balance}</p>
                 <div className="flex items-center space-x-2">
