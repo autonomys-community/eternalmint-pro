@@ -35,7 +35,8 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
   const imageSettings = useMemo(() => {
     const settings = getImageOptimizationSettings(isAnimated ? 'image/gif' : undefined);
     // Remove priority from settings since we set it explicitly as a prop
-    const { priority: _, ...settingsWithoutPriority } = settings;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { priority, ...settingsWithoutPriority } = settings;
     return settingsWithoutPriority;
   }, [isAnimated]);
 

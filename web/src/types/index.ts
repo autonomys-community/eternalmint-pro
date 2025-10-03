@@ -32,8 +32,8 @@ declare global {
     ethereum?: {
       request: (args: {
         method: string;
-        params?: any;
-      }) => Promise<any>;
+        params?: unknown;
+      }) => Promise<unknown>;
     };
   }
 }
