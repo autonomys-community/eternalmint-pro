@@ -69,7 +69,7 @@ export const MyNFTsList: React.FC = () => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              method: "getCID",
+              method: "getCid",
               args: [tokenId]
             })
           });

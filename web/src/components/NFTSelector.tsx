@@ -45,7 +45,7 @@ const ERC1155_ABI = [
   },
   {
     inputs: [{ name: "tokenId", type: "uint256" }],
-    name: "getCID",
+    name: "getCid",
     outputs: [{ name: "", type: "string" }],
     stateMutability: "view",
     type: "function"
@@ -111,7 +111,7 @@ export default function NFTSelector({ onNFTSelected, distributionMode, onDistrib
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              method: 'getCID',
+              method: 'getCid',
               args: [tokenIds[i].toString()]
             })
           });

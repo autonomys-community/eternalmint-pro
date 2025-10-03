@@ -6,7 +6,7 @@ import { createPublicClient, http } from 'viem';
 const CONTRACT_ABI = [
   {
     inputs: [{ name: "tokenId", type: "uint256" }],
-    name: "getCID",
+    name: "getCid",
     outputs: [{ name: "", type: "string" }],
     stateMutability: "view",
     type: "function"
@@ -49,14 +49,14 @@ const CONTRACT_ABI = [
 
 // 1. Define allowed contract methods
 export type ContractMethod =
-  | 'getCID'
+  | 'getCid'
   | 'getSupply'
   | 'getCreator'
   | 'canUserDistribute'
   | 'getUserTokens';
 
 const allowedMethods: ContractMethod[] = [
-  'getCID',
+  'getCid',
   'getSupply',
   'getCreator',
   'canUserDistribute',
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     const { method, args } = await request.json();
 
     // 2. Validate user input
-    if (!allowedMethods.includes(method)) {
+    if (!allowedMethods.includes(method as ContractMethod)) {
       return NextResponse.json({ error: 'Invalid method' }, { status: 400 });
     }
 
