@@ -100,6 +100,11 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
     }
   }, [nft.tokenId, nft.name, nft.image]);
 
+  const getExplorerUrl = useCallback(() => {
+    if (!nft.tokenId) return '#';
+    return `${APP_CONFIG.evmNetwork.blockExplorer}/token/${APP_CONFIG.contract.address}/instance/${nft.tokenId}`;
+  }, [nft.tokenId]);
+
   // Update modal NFT when the original NFT changes
   useEffect(() => {
     if (!isTransferModalOpen && nft) {
@@ -300,6 +305,18 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
                   </>
                 )}
               </button>
+              
+              <Link
+                href={getExplorerUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 hover:scale-105 shadow-lg font-medium flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+                View on Explorer
+              </Link>
             </div>
           </div>
         </div>
