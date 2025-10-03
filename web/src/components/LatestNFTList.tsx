@@ -2,16 +2,27 @@
 
 import { APP_CONFIG } from "@/config/app";
 import { getMetadataApiUrl, getStorageApiUrl } from "@/config/constants";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NFT, NftMinted } from "../types";
 import { NftContainer } from "./NftContainer";
 
 export const LatestNFTList: React.FC = () => {
   const [nfts, setNfts] = useState<NFT[]>([]);
+  const fetchingRef = useRef(false); // Prevent duplicate fetches
 
   useEffect(() => {
     const fetchNFTs = async () => {
-      const response = await fetch(APP_CONFIG.contract.subgraphUrl, {
+      // Prevent duplicate fetches (React StrictMode, re-renders, etc.)
+      if (fetchingRef.current) {
+        console.log('LatestNFTList: Fetch already in progress, skipping...');
+        return;
+      }
+      
+      console.log('LatestNFTList: Starting fetch');
+      fetchingRef.current = true;
+      
+      try {
+        const response = await fetch(APP_CONFIG.contract.subgraphUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,9 +46,8 @@ export const LatestNFTList: React.FC = () => {
       const { data } = await response.json();
       console.log("data", data);
       
-      // Fetch metadata for each NFT
-      const transformedNfts: NFT[] = [];
-      for (const item of data.nftMinteds) {
+      // Process all NFTs in parallel instead of sequentially
+      const nftPromises = data.nftMinteds.map(async (item: NftMinted) => {
         let imageUrl = "";
         let name = "";
         let description = "";
@@ -56,7 +66,7 @@ export const LatestNFTList: React.FC = () => {
           console.error(`Error fetching metadata for NFT ${item.id}:`, error);
         }
         
-        transformedNfts.push({
+        return {
           id: item.id,
           image: imageUrl,
           name,
@@ -64,10 +74,16 @@ export const LatestNFTList: React.FC = () => {
           creator: item.creator,
           quantity: item.supply,
           cid: item.cid,
-        });
-      }
+        };
+      });
       
-      setNfts(transformedNfts);
+        // Wait for all NFTs to be processed
+        const transformedNfts = await Promise.all(nftPromises);
+        setNfts(transformedNfts);
+      } finally {
+        fetchingRef.current = false; // Reset fetch flag
+        console.log('LatestNFTList: Fetch completed');
+      }
     };
 
     fetchNFTs();
