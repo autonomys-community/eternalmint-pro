@@ -13,28 +13,13 @@ export {
 
 import { APP_CONFIG, STORAGE_NETWORKS, type StorageNetworkName } from './app';
 
-// Helper functions for the new network:cid format
-export const parseImageString = (imageString: string): { network: string; cid: string } | null => {
-  if (!imageString || !imageString.includes(':')) {
-    return null;
-  }
-  
-  const [network, cid] = imageString.split(':', 2);
-  if (!network || !cid) {
-    return null;
-  }
-  
-  return { network, cid };
-};
-
-// Construct API URL from network:cid format
-export const getStorageApiUrl = (imageString: string): string => {
-  const parsed = parseImageString(imageString);
-  if (!parsed) {
+// Construct storage API URL from CID
+export const getStorageApiUrl = (cid: string): string => {
+  if (!cid) {
     return "";
   }
   
-  return `/api/cid/${parsed.cid}`;
+  return `/api/cid/${cid}`;
 };
 
 // Construct metadata API URL
