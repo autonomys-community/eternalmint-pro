@@ -105,16 +105,16 @@ export const CONTRACT_DEPLOYMENTS = {
   development: {
     evmNetwork: 'chronos' as NetworkName,
     storageNetwork: 'mainnet' as StorageNetworkName,
-    contractAddress: '0x0fC1D8A49417eE6d211909e236686708d01d356E',
-    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.4',
+    contractAddress: '0x732785A0E29Bf84e56B4555C761853834E12be07',
+    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.7',
     version: '1.0.0',
     deployedAt: '2025-06-25', // Update with actual deployment date
   },
   staging: {
     evmNetwork: 'chronos' as NetworkName,
     storageNetwork: 'mainnet' as StorageNetworkName,
-    contractAddress: '0x0fC1D8A49417eE6d211909e236686708d01d356E',
-    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.4',
+    contractAddress: '0x732785A0E29Bf84e56B4555C761853834E12be07',
+    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.7',
     version: '1.0.0',
     deployedAt: '2025-06-25', // Update with actual deployment date
   },

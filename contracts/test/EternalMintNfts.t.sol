@@ -281,4 +281,48 @@ contract EternalMintNftsTest is Test {
         assertEq(gatewayUrl, "https://gateway.autonomys.xyz/file/", "Gateway URL should match the fixed value");
     }
 
+    /**
+     * @notice Tests that the contract name can be retrieved.
+     */
+    function test_Name() public view {
+        // Act: Get the contract name
+        string memory contractName = eternalMintNfts.name();
+
+        // Assert: Verify it matches the expected name
+        assertEq(contractName, "EternalMint Pro", "Contract name should be 'EternalMint Pro'");
+    }
+
+    /**
+     * @notice Tests that the contract symbol can be retrieved.
+     */
+    function test_Symbol() public view {
+        // Act: Get the contract symbol
+        string memory contractSymbol = eternalMintNfts.symbol();
+
+        // Assert: Verify it matches the expected symbol
+        assertEq(contractSymbol, "EMP", "Contract symbol should be 'EMP'");
+    }
+
+    /**
+     * @notice Tests that the contract name constant can be accessed directly.
+     */
+    function test_NameConstant() public view {
+        // Act: Get the contract name constant
+        string memory contractName = eternalMintNfts.NAME();
+
+        // Assert: Verify it matches the expected name
+        assertEq(contractName, "EternalMint Pro", "Contract NAME constant should be 'EternalMint Pro'");
+    }
+
+    /**
+     * @notice Tests that the contract symbol constant can be accessed directly.
+     */
+    function test_SymbolConstant() public view {
+        // Act: Get the contract symbol constant
+        string memory contractSymbol = eternalMintNfts.SYMBOL();
+
+        // Assert: Verify it matches the expected symbol
+        assertEq(contractSymbol, "EMP", "Contract SYMBOL constant should be 'EMP'");
+    }
+
 }

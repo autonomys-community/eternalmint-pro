@@ -9,6 +9,19 @@ contract EternalMintNfts is ERC1155(""), AccessControl, ReentrancyGuard {
 
     // Static gateway URL for Auto Drive
     string private constant GATEWAY_URL = "https://gateway.autonomys.xyz/file/";
+    
+    // Contract name and symbol for display purposes
+    string public constant NAME = "EternalMint Pro";
+    string public constant SYMBOL = "EMP";
+    
+    // Standard ERC functions that return the constants
+    function name() public pure returns (string memory) {
+        return NAME;
+    }
+    
+    function symbol() public pure returns (string memory) {
+        return SYMBOL;
+    }
 
     // Struct to store token details
     struct Token {

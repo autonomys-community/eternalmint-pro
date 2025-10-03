@@ -6,9 +6,9 @@ dataSources:
     name: EternalMintNfts
     network: autonomys-chronos
     source:
-      address: "0x0fC1D8A49417eE6d211909e236686708d01d356E"
+      address: "0x732785A0E29Bf84e56B4555C761853834E12be07"
       abi: EternalMintNfts
-      startBlock: 291677
+      startBlock: 293591
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

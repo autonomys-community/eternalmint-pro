@@ -1,13 +1,7 @@
 [
   {
     "type": "constructor",
-    "inputs": [
-      {
-        "name": "baseURI",
-        "type": "string",
-        "internalType": "string"
-      }
-    ],
+    "inputs": [],
     "stateMutability": "nonpayable"
   },
   {
@@ -45,6 +39,32 @@
         "name": "",
         "type": "bytes32",
         "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "NAME",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "SYMBOL",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
       }
     ],
     "stateMutability": "view"
@@ -205,19 +225,6 @@
   },
   {
     "type": "function",
-    "name": "getBaseURI",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "string",
-        "internalType": "string"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "getCid",
     "inputs": [
       {
@@ -253,6 +260,19 @@
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getGatewayUrl",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "pure"
   },
   {
     "type": "function",
@@ -530,6 +550,19 @@
   },
   {
     "type": "function",
+    "name": "name",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
     "name": "removeMinter",
     "inputs": [
       {
@@ -663,19 +696,6 @@
   },
   {
     "type": "function",
-    "name": "setBaseURI",
-    "inputs": [
-      {
-        "name": "newBaseURI",
-        "type": "string",
-        "internalType": "string"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
     "name": "supportsInterface",
     "inputs": [
       {
@@ -692,6 +712,19 @@
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "symbol",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "pure"
   },
   {
     "type": "function",
