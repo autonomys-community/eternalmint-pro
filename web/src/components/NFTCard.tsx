@@ -1,6 +1,7 @@
 "use client";
 
 import { APP_CONFIG, getGatewayUrl } from "@/config/app";
+import { isValidUrl } from "@/config/constants";
 import { useDepth } from "@/contexts/DepthContext";
 import { getImageOptimizationSettings, isLikelyAnimatedGif } from "@/utils/mediaUtils";
 import Image from "next/image";
@@ -17,28 +18,12 @@ interface NFTCardProps {
 }
 
 export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priority = false }) => {
-  // Early return if nft is not properly loaded (before all hooks)
-  if (!nft || !nft.id) {
-    return null;
-  }
-
   const { depthEnabled } = useDepth();
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [modalNft, setModalNft] = useState(nft);
   const [imageError, setImageError] = useState(false);
   const [addingToMetaMask, setAddingToMetaMask] = useState(false);
-
-  // Helper function to validate image URL
-  const isValidImageUrl = (url: string | undefined): boolean => {
-    if (!url) return false;
-    try {
-      const parsedUrl = new URL(url);
-      return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
-    } catch {
-      return false;
-    }
-  };
 
   // Check if the image is animated
   const isAnimated = useMemo(() => {
@@ -73,7 +58,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
   }, []);
 
   const handleAddToMetaMask = useCallback(async () => {
-    if (!nft.tokenId || !window.ethereum) {
+    if (!nft?.tokenId || !window.ethereum) {
       alert('MetaMask not detected. Please install MetaMask to add tokens.');
       return;
     }
@@ -104,12 +89,12 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
       setAddingToMetaMask(false);
       alert('Failed to add token to MetaMask. Please try again.');
     }
-  }, [nft.tokenId, nft.name, nft.image]);
+  }, [nft?.tokenId, nft?.name, nft?.image]);
 
   const getExplorerUrl = useCallback(() => {
-    if (!nft.tokenId) return '#';
+    if (!nft?.tokenId) return '#';
     return `${APP_CONFIG.evmNetwork.blockExplorer}/token/${APP_CONFIG.contract.address}/instance/${nft.tokenId}`;
-  }, [nft.tokenId]);
+  }, [nft?.tokenId]);
 
   // Update modal NFT when the original NFT changes
   useEffect(() => {
@@ -117,6 +102,11 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
       setModalNft(nft);
     }
   }, [nft, isTransferModalOpen]);
+
+  // Early return if nft is not properly loaded (after all hooks)
+  if (!nft || !nft.id) {
+    return null;
+  }
 
   // Depth effect class configurations
   const stackedCardClasses = depthEnabled 
@@ -201,7 +191,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
         <div className="relative p-6 flex flex-col flex-1">
           {/* Image Section */}
           <div className={imageContainerClasses}>
-            {imageError || !nft.image || !isValidImageUrl(nft.image) ? (
+            {imageError || !nft.image || !isValidUrl(nft.image) ? (
               <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                 <div className="text-center">
                   <div className="text-4xl mb-2">🖼️</div>

@@ -6,7 +6,7 @@ export {
   CURRENT_STORAGE_NETWORK, getImageSizeErrorMessage,
   getImageTypeErrorMessage,
   isDevelopment, isProduction, isStaging, isValidImageSize,
-  isValidImageType
+  isValidImageType, isValidUrl
 } from './app';
 
 import { APP_CONFIG } from './app';

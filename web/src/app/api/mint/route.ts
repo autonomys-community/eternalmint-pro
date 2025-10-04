@@ -1,5 +1,5 @@
-import { APP_CONFIG, getGatewayUrl, getHostUrl } from "@/config/app";
-import { getImageSizeErrorMessage, getImageTypeErrorMessage, isValidImageSize, isValidImageType } from "@/config/constants";
+import { APP_CONFIG, getGatewayUrl } from "@/config/app";
+import { getImageSizeErrorMessage, getImageTypeErrorMessage, isValidImageSize, isValidImageType, isValidUrl } from "@/config/constants";
 import { createAutoDriveApi } from "@autonomys/auto-drive";
 import { Contract, JsonRpcProvider, Wallet } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
@@ -46,6 +46,14 @@ export const POST = async (req: NextRequest) => {
     const externalLink = formData.get("externalLink") as string;
     const media = formData.get("media") as File | null;
     const creator = formData.get("creator") as string;
+
+    // Validate externalLink if provided
+    if (externalLink && !isValidUrl(externalLink)) {
+      return NextResponse.json(
+        { message: "Invalid external link URL. Only HTTP and HTTPS URLs are allowed." },
+        { status: 400 }
+      );
+    }
 
     console.log("Received Data:", {
       name,
@@ -102,17 +110,24 @@ export const POST = async (req: NextRequest) => {
     const imageCid = uploadedFileCid?.toString() || "";
     mediaUrl = getGatewayUrl(imageCid); // For response only
 
-    // Set external_url to point to the user's NFT collection page
-    const hostUrl = getHostUrl(req);
-    const externalUrl = externalLink || `${hostUrl}/my-nfts`;
-
-    const metadata = {
+    // Build metadata object - only include external_url if user provided a valid one
+    const metadata: {
+      description: string;
+      image: string;
+      name: string;
+      attributes: never[];
+      external_url?: string;
+    } = {
       description,
-      external_url: externalUrl,
       image: mediaUrl,
       name,
       attributes: [],
     };
+
+    // Only add external_url if user provided a valid, non-empty link
+    if (isValidUrl(externalLink)) {
+      metadata.external_url = externalLink.trim();
+    }
     console.log("Metadata:", metadata);
 
     const metadataBuffer = Buffer.from(JSON.stringify(metadata));

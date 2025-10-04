@@ -249,6 +249,17 @@ export const isValidImageType = (mimeType: string): boolean => {
   return APP_CONFIG.storage.supportedImageTypes.includes(mimeType as typeof APP_CONFIG.storage.supportedImageTypes[number]);
 };
 
+export const isValidUrl = (url: string | undefined): boolean => {
+  if (!url || !url.trim()) return false;
+  try {
+    const parsedUrl = new URL(url.trim());
+    // Only allow http and https protocols
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 export const getImageSizeErrorMessage = (): string => {
   return `File is larger than ${APP_CONFIG.storage.maxImageSizeMB}MB.`;
 };
