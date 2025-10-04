@@ -17,6 +17,11 @@ interface NFTCardProps {
 }
 
 export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priority = false }) => {
+  // Early return if nft is not properly loaded (before all hooks)
+  if (!nft || !nft.id) {
+    return null;
+  }
+
   const { depthEnabled } = useDepth();
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -25,7 +30,8 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
   const [addingToMetaMask, setAddingToMetaMask] = useState(false);
 
   // Helper function to validate image URL
-  const isValidImageUrl = (url: string): boolean => {
+  const isValidImageUrl = (url: string | undefined): boolean => {
+    if (!url) return false;
     try {
       const parsedUrl = new URL(url);
       return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
@@ -82,7 +88,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
             address: APP_CONFIG.contract.address,
             tokenId: nft.tokenId,
             symbol: nft.name || `NFT #${nft.tokenId}`,
-            image: nft.image,
+            image: nft.image || '',
           },
         },
       });
@@ -111,11 +117,6 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
       setModalNft(nft);
     }
   }, [nft, isTransferModalOpen]);
-
-  // Early return if nft is not properly loaded (after all hooks)
-  if (!nft || !nft.id) {
-    return null;
-  }
 
   // Depth effect class configurations
   const stackedCardClasses = depthEnabled 
@@ -355,7 +356,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
           onClose={() => setIsImageModalOpen(false)}
           imageSrc={nft.image}
           imageAlt={nft.name || "NFT"}
-          title={nft.name}
+          title={nft.name || "NFT"}
           mimeType={isAnimated ? 'image/gif' : undefined}
         />
       )}
