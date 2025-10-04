@@ -1,5 +1,5 @@
 import { APP_CONFIG, getGatewayUrl } from "@/config/app";
-import { getImageSizeErrorMessage, getImageTypeErrorMessage, isValidImageSize, isValidImageType, isValidUrl } from "@/config/constants";
+import { isValidUrl } from "@/config/constants";
 import { createAutoDriveApi } from "@autonomys/auto-drive";
 import { Contract, JsonRpcProvider, Wallet } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
@@ -66,52 +66,14 @@ export const POST = async (req: NextRequest) => {
       imageCid,
     });
 
-    let mediaUrl = "";
+    // Use the provided imageCid (file was already uploaded by frontend)
+    const mediaUrl = getGatewayUrl(imageCid);
 
-    if (!media)
-      return NextResponse.json(
-        { message: "Media is required" },
-        { status: 400 }
-      );
-    if (!isValidImageType(media.type))
-      return NextResponse.json(
-        { message: getImageTypeErrorMessage() },
-        { status: 400 }
-      );
-    if (!isValidImageSize(media.size)) {
-      return NextResponse.json(
-        { message: getImageSizeErrorMessage() },
-        { status: 400 }
-      );
-    }
-
-    const arrayBuffer = await media.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Use mainnet storage (only supported network)
-    const networkString = "mainnet";
-
+    // Initialize Auto Drive client for metadata upload
     const driveClient = createAutoDriveApi({
-      apiKey: process.env.AUTO_DRIVE_API_KEY!, 
-      network: networkString
+      apiKey: process.env.AUTO_DRIVE_API_KEY!,
+      network: "mainnet"
     });
-
-    const uploadedFileCid = await driveClient.uploadFile(
-      {
-        read: async function* () {
-          yield buffer;
-        },
-        name: media.name,
-        mimeType: media.type,
-        size: buffer.length,
-      },
-      {}
-    );
-
-    console.log("Final Upload Response:", uploadedFileCid);
-
-    const imageCid = uploadedFileCid?.toString() || "";
-    mediaUrl = getGatewayUrl(imageCid); // For response only
 
     // Build metadata object - only include external_url if user provided a valid one
     const metadata: {

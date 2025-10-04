@@ -1,4 +1,4 @@
-import { APP_CONFIG, getImageSizeErrorMessage, getImageTypeErrorMessage, isValidImageSize, isValidImageType } from "@/config/constants";
+import { getImageSizeErrorMessage, getImageTypeErrorMessage, isValidImageSize, isValidImageType } from "@/config/constants";
 import { createAutoDriveApi } from "@autonomys/auto-drive";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -174,20 +174,7 @@ export const POST = async (req: NextRequest) => {
       const fullFile = Buffer.concat(validChunks);
       
       // Upload to Auto-Drive
-      const storageNetworkName = APP_CONFIG.storage.networkName;
-      let networkString: "taurus" | "mainnet";
-      if (storageNetworkName === "taurus") {
-        networkString = "taurus";
-      } else if (storageNetworkName === "mainnet") {
-        networkString = "mainnet";
-      } else {
-        // Clean up chunks for invalid network configuration
-        chunkStore.delete(uploadId);
-        return NextResponse.json(
-          { message: `Invalid storage network: ${storageNetworkName}` },
-          { status: 500 }
-        );
-      }
+      const networkString = "mainnet";
 
       const driveClient = createAutoDriveApi({
         apiKey: process.env.AUTO_DRIVE_API_KEY!,
