@@ -132,15 +132,15 @@ export const CONTRACT_DEPLOYMENTS = {
 export const ENVIRONMENT_CONFIG = {
   development: {
     debug: true,
-    maxImageSizeMB: 10, // More generous for development
+    maxImageSizeMB: 20,
   },
   staging: {
     debug: true,
-    maxImageSizeMB: 5,
+    maxImageSizeMB: 20,
   },
   production: {
     debug: false,
-    maxImageSizeMB: 5,
+    maxImageSizeMB: 20,
   },
 } as const;
 
