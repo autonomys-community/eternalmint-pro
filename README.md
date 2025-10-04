@@ -1,6 +1,6 @@
-# Eternal Mint
+# EternalMint Pro
 
-<a href="https://eternalmint.xyz">
+<a href="https://eternalmintpro.xyz">
   <picture>
     <source 
       srcset="https://raw.githubusercontent.com/marc-aurele-besner/eternalmint-xyz/refs/heads/main/.github/images/eternalmint.png"
@@ -11,17 +11,17 @@
       media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
     />
     <img
-      alt="Eternal Mint"
+      alt="EternalMint Pro"
       src="https://raw.githubusercontent.com/marc-aurele-besner/eternalmint-xyz/refs/heads/main/.github/images/eternalmint.png"
       width="100%"
   />
 </a>
 
-<a href="https://eternalmint.xyz">EternalMint.xyz</a>
+<a href="https://eternalmintpro.xyz">EternalMintPro.xyz</a>
 
 **Mint Once, Own Forever: Fully Decentralized, Eternally Accessible NFTs.**
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app). Eternal Mint allows users to create and manage NFTs in a decentralized manner.
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app). EternalMint Pro allows users to create and manage NFTs in a decentralized manner.
 
 ## Table of Contents
 

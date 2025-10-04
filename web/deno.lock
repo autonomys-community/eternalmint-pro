@@ -7970,13 +7970,17 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@autonomys/auto-drive@^1.5.0",
+        "npm:@autonomys/auto-drive@^1.5.18",
         "npm:@next/third-parties@^15.1.3",
+        "npm:@polkadot/keyring@^13.5.6",
+        "npm:@polkadot/util-crypto@^13.5.6",
+        "npm:@polkadot/util@^13.5.6",
         "npm:@rainbow-me/rainbowkit@^2.2.0",
         "npm:@tanstack/react-query@^5.59.15",
         "npm:@types/node@20",
         "npm:@types/react-dom@18",
         "npm:@types/react@18",
+        "npm:autoprefixer@^10.4.21",
         "npm:encoding@~0.1.13",
         "npm:eslint-config-next@14.2.15",
         "npm:eslint@8",

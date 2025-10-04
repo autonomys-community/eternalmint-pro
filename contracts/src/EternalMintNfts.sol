@@ -1,11 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract EternalMintNfts is ERC1155("https://eternalmint.xyz/api/cid/{id}"), AccessControl, ReentrancyGuard {
+contract EternalMintNfts is ERC1155(""), AccessControl, ReentrancyGuard {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+    // Static gateway URL for Auto Drive
+    string private constant GATEWAY_URL = "https://gateway.autonomys.xyz/file/";
+    
+    // Contract name and symbol for display purposes
+    string public constant NAME = "EternalMint Pro";
+    string public constant SYMBOL = "EMP";
+    
+    // Standard ERC functions that return the constants
+    function name() public pure returns (string memory) {
+        return NAME;
+    }
+    
+    function symbol() public pure returns (string memory) {
+        return SYMBOL;
+    }
 
     // Struct to store token details
     struct Token {
@@ -39,6 +55,13 @@ contract EternalMintNfts is ERC1155("https://eternalmint.xyz/api/cid/{id}"), Acc
         uint256 amount,
         uint256 timestamp
     );
+
+    /**
+     * @dev Constructor sets up admin role.
+     */
+    constructor() {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
 
     // Modifiers
     modifier validRecipient(address recipient) {
@@ -77,11 +100,6 @@ contract EternalMintNfts is ERC1155("https://eternalmint.xyz/api/cid/{id}"), Acc
         
         require(isAdmin || isCreator, "Not authorized: must be contract admin or NFT creator");
         _;
-    }
-
-    constructor() {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, msg.sender);
     }
 
     /**
@@ -335,8 +353,29 @@ contract EternalMintNfts is ERC1155("https://eternalmint.xyz/api/cid/{id}"), Acc
      * @param tokenId The ID of the token for which the CID is requested.
      * @return The CID string linked to the provided token ID.
      */
-    function getCID(uint256 tokenId) public view returns (string memory) {
+    function getCid(uint256 tokenId) public view returns (string memory) {
         return tokens[tokenId].cid;
+    }
+
+    /**
+     * @dev Returns the URI for a given token ID.
+     * This function is required for MetaMask and other wallets to display NFT metadata.
+     * It returns the API endpoint that serves the JSON metadata for the token.
+     *
+     * @param tokenId The ID of the token for which the URI is requested.
+     * @return The metadata URI for the specified token ID.
+     */
+    function uri(uint256 tokenId) public view override returns (string memory) {
+        require(tokens[tokenId].supply > 0, "Token does not exist");
+        return string(abi.encodePacked(GATEWAY_URL, tokens[tokenId].cid));
+    }
+
+    /**
+     * @dev Returns the gateway URL for metadata.
+     * @return The fixed gateway URL string.
+     */
+    function getGatewayUrl() public pure returns (string memory) {
+        return GATEWAY_URL;
     }
 
     /**

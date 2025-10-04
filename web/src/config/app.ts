@@ -3,8 +3,8 @@
 // Sensitive values (API keys, private keys) should remain in environment variables.
 
 export type Environment = 'development' | 'staging' | 'production';
-export type NetworkName = 'taurus' | 'mainnet';
-export type StorageNetworkName = 'taurus' | 'mainnet';
+export type NetworkName = 'chronos' | 'mainnet';
+export type StorageNetworkName = 'mainnet';
 
 // Determine environment
 const getEnvironment = (): Environment => {
@@ -26,8 +26,8 @@ const getEnvironment = (): Environment => {
 
 export const ENV = getEnvironment();
 
-// Auto-detect host URL
-const getHostUrl = (): string => {
+// Auto-detect host URL for both client and server contexts
+export const getHostUrl = (req?: Request): string => {
   // If explicitly set, use that (only override we keep for host)
   if (process.env.NEXT_PUBLIC_HOST) {
     return process.env.NEXT_PUBLIC_HOST;
@@ -44,6 +44,15 @@ const getHostUrl = (): string => {
     return window.location.origin;
   }
 
+  // Server-side: try to get from request headers first (for API routes)
+  if (req) {
+    const host = req.headers.get('host');
+    if (host) {
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      return `${protocol}://${host}`;
+    }
+  }
+
   // Server-side: use Vercel environment variables or fallback
   const vercelUrl = process.env.VERCEL_URL;
   if (vercelUrl) {
@@ -51,16 +60,16 @@ const getHostUrl = (): string => {
   }
 
   // Fallback to known production URL
-  return 'https://eternalmint-pro.vercel.app';
+  return 'https://eternalmintpro.xyz';
 };
 
 // EVM Network configurations (blockchain infrastructure only)
 export const EVM_NETWORKS = {
-  taurus: {
-    name: 'Autonomys Taurus Auto EVM',
-    chainId: 490000,
-    rpcUrl: 'https://auto-evm.taurus.autonomys.xyz/ws',
-    blockExplorer: 'https://explorer.auto-evm.taurus.autonomys.xyz',
+  chronos: {
+    name: 'Autonomys Chronos Auto EVM',
+    chainId: 8700,
+    rpcUrl: 'https://auto-evm.chronos.autonomys.xyz/ws',
+    blockExplorer: 'https://explorer.auto-evm.chronos.autonomys.xyz',
     currency: {
       name: 'tAI3',
       symbol: 'tAI3',
@@ -70,7 +79,7 @@ export const EVM_NETWORKS = {
   },
   mainnet: {
     name: 'Autonomys Mainnet Auto EVM',
-    chainId: 490001, // Placeholder - update when mainnet is available
+    chainId: 870,
     rpcUrl: 'https://auto-evm.mainnet.autonomys.xyz/ws', // Placeholder
     blockExplorer: 'https://explorer.auto-evm.mainnet.autonomys.xyz', // Placeholder
     currency: {
@@ -84,11 +93,6 @@ export const EVM_NETWORKS = {
 
 // Storage Network configurations (file storage infrastructure only)
 export const STORAGE_NETWORKS = {
-  taurus: {
-    name: 'Autonomys Taurus Auto Drive',
-    apiUrl: 'https://demo.auto-drive.autonomys.xyz/api/objects',
-    testnet: true,
-  },
   mainnet: {
     name: 'Autonomys Mainnet Auto Drive',
     apiUrl: 'https://mainnet.auto-drive.autonomys.xyz/api/objects',
@@ -99,24 +103,24 @@ export const STORAGE_NETWORKS = {
 // Contract deployment configurations (deployment-specific)
 export const CONTRACT_DEPLOYMENTS = {
   development: {
-    evmNetwork: 'taurus' as NetworkName,
-    storageNetwork: 'taurus' as StorageNetworkName,
-    contractAddress: '0x09e8798DAb58C211183c42325Ad7CCd935C11f7D',
-    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-dev/v0.0.23',
+    evmNetwork: 'chronos' as NetworkName,
+    storageNetwork: 'mainnet' as StorageNetworkName,
+    contractAddress: '0x732785A0E29Bf84e56B4555C761853834E12be07',
+    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.7',
     version: '1.0.0',
     deployedAt: '2025-06-25', // Update with actual deployment date
   },
   staging: {
-    evmNetwork: 'taurus' as NetworkName,
-    storageNetwork: 'taurus' as StorageNetworkName,
-    contractAddress: '0x09e8798DAb58C211183c42325Ad7CCd935C11f7D',
-    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-dev/v0.0.23',
+    evmNetwork: 'chronos' as NetworkName,
+    storageNetwork: 'mainnet' as StorageNetworkName,
+    contractAddress: '0x732785A0E29Bf84e56B4555C761853834E12be07',
+    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro-staging/v0.0.7',
     version: '1.0.0',
     deployedAt: '2025-06-25', // Update with actual deployment date
   },
   production: {
-    evmNetwork: 'taurus' as NetworkName, // Will change to 'mainnet' when ready
-    storageNetwork: 'mainnet' as StorageNetworkName, // Could use mainnet storage even with taurus EVM
+    evmNetwork: 'mainnet' as NetworkName, // Will change to 'mainnet' when ready
+    storageNetwork: 'mainnet' as StorageNetworkName, // Could use mainnet storage even with chronos EVM
     contractAddress: '0x8A7325f9eA80D65c8f69F3797F345Cc831EC01f4', // Will be different for production
     subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro/v0.0.2', // Different subgraph for production
     version: '1.0.0',
@@ -128,7 +132,7 @@ export const CONTRACT_DEPLOYMENTS = {
 export const ENVIRONMENT_CONFIG = {
   development: {
     debug: true,
-    maxImageSizeMB: 20, // More generous for development
+    maxImageSizeMB: 20,
   },
   staging: {
     debug: true,
@@ -136,7 +140,7 @@ export const ENVIRONMENT_CONFIG = {
   },
   production: {
     debug: false,
-    maxImageSizeMB: 5,
+    maxImageSizeMB: 20,
   },
 } as const;
 
@@ -236,10 +240,6 @@ export const APP_CONFIG = {
 } as const;
 
 // Helper functions
-export const getStorageApiUrl = (storageNetworkName: StorageNetworkName = APP_CONFIG.storage.networkName): string => {
-  return STORAGE_NETWORKS[storageNetworkName].apiUrl;
-};
-
 export const isValidImageSize = (sizeInBytes: number): boolean => {
   const maxSizeBytes = APP_CONFIG.storage.maxImageSizeMB * 1024 * 1024;
   return sizeInBytes <= maxSizeBytes;
@@ -247,6 +247,17 @@ export const isValidImageSize = (sizeInBytes: number): boolean => {
 
 export const isValidImageType = (mimeType: string): boolean => {
   return APP_CONFIG.storage.supportedImageTypes.includes(mimeType as typeof APP_CONFIG.storage.supportedImageTypes[number]);
+};
+
+export const isValidUrl = (url: string | undefined): boolean => {
+  if (!url || !url.trim()) return false;
+  try {
+    const parsedUrl = new URL(url.trim());
+    // Only allow http and https protocols
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
 };
 
 export const getImageSizeErrorMessage = (): string => {
@@ -269,4 +280,9 @@ export const isProduction = ENV === 'production';
 export const CURRENT_CHAIN = CURRENT_EVM_NETWORK;
 
 // Export current contract deployment for easy access
-export const CURRENT_CONTRACT = contractDeployment; 
+export const CURRENT_CONTRACT = contractDeployment;
+
+// Auto Drive gateway URL helper
+export const getGatewayUrl = (cid: string): string => {
+  return `https://gateway.autonomys.xyz/file/${cid}`;
+}; 

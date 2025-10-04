@@ -12,6 +12,7 @@ contract EternalMintNftsScript is Script {
         console.log("Deploying EternalMintNfts contract");
         console.log("Deployer address:", msg.sender);
         console.log("Chain ID:", block.chainid);
+        console.log("Gateway URL: https://gateway.autonomys.xyz/file/");
 
         // Begin sending transactions
         vm.startBroadcast();

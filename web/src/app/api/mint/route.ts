@@ -1,5 +1,5 @@
-import { APP_CONFIG } from "@/config/app";
-import { getStorageUrl } from "@/config/constants";
+import { APP_CONFIG, getGatewayUrl } from "@/config/app";
+import { isValidUrl } from "@/config/constants";
 import { createAutoDriveApi } from "@autonomys/auto-drive";
 import { Contract, JsonRpcProvider, Wallet } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
@@ -49,6 +49,14 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
+    // Validate externalLink if provided
+    if (externalLink && !isValidUrl(externalLink)) {
+      return NextResponse.json(
+        { message: "Invalid external link URL. Only HTTP and HTTPS URLs are allowed." },
+        { status: 400 }
+      );
+    }
+
     console.log("Received Data:", {
       name,
       supply,
@@ -58,34 +66,33 @@ export const POST = async (req: NextRequest) => {
       imageCid,
     });
 
-    const storageNetworkName = APP_CONFIG.storage.networkName;
-    const mediaUrl = getStorageUrl(imageCid); // For response only
+    // Use the provided imageCid (file was already uploaded by frontend)
+    const mediaUrl = getGatewayUrl(imageCid);
 
-    // Create Auto-Drive client for metadata upload
-    let networkString: "taurus" | "mainnet";
-    if (storageNetworkName === "taurus") {
-      networkString = "taurus";
-    } else if (storageNetworkName === "mainnet") {
-      networkString = "mainnet";
-    } else {
-      return NextResponse.json(
-        { message: `Invalid storage network: ${storageNetworkName}` },
-        { status: 500 }
-      );
-    }
-
+    // Initialize Auto Drive client for metadata upload
     const driveClient = createAutoDriveApi({
-      apiKey: process.env.AUTO_DRIVE_API_KEY!, 
-      network: networkString
+      apiKey: process.env.AUTO_DRIVE_API_KEY!,
+      network: "mainnet"
     });
 
-    const metadata = {
+    // Build metadata object - only include external_url if user provided a valid one
+    const metadata: {
+      description: string;
+      image: string;
+      name: string;
+      attributes: never[];
+      external_url?: string;
+    } = {
       description,
-      external_url: externalLink,
-      image: `${storageNetworkName}:${imageCid}`, // Store network:cid format
+      image: mediaUrl,
       name,
       attributes: [],
     };
+
+    // Only add external_url if user provided a valid, non-empty link
+    if (isValidUrl(externalLink)) {
+      metadata.external_url = externalLink.trim();
+    }
     console.log("Metadata:", metadata);
 
     const metadataBuffer = Buffer.from(JSON.stringify(metadata));

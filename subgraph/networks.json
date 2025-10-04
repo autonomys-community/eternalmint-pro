@@ -1,8 +1,14 @@
 {
-  "autonomys-taurus": {
+  "autonomys-chronos": {
     "EternalMintNfts": {
-      "address": "0x505c243ec05dF81bC33295fF7C135D4D98063Da5",
-      "startBlock": 215542
+      "address": "0x2601FB64e5cA137f273Fa64c28056a040d132A1b",
+      "startBlock": 282110
+    }
+  },
+  "autonomys-mainnet": {
+    "EternalMintNfts": {
+      "address": "0x2601FB64e5cA137f273Fa64c28056a040d132A1b",
+      "startBlock": 282110
     }
   }
 }

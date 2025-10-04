@@ -9,10 +9,13 @@ fi
 forge verify-contract  \
     --rpc-url $RPC_URL  \
     --verifier blockscout  \
-    --verifier-url https://explorer.auto-evm.taurus.autonomys.xyz/api -e "" \
-    --evm-version london --chain 490000 --compiler-version 0.8.30  \
+    --verifier-url https://explorer.auto-evm.chronos.autonomys.xyz/api \
+    --evm-version london \
+    --chain $CHAIN_ID \
+    --compiler-version 0.8.30  \
     --watch  \
-    0x346201D2A8eB53807991AF04f7842334674B8793  \
+    --num-of-optimizations 20000 \
+    $CONTRACT_ADDRESS  \
     src/EternalMintNfts.sol:EternalMintNfts
 
 # If the verification fails, you can try to verify the contract manually using the Single File approach on the Blockscout UI

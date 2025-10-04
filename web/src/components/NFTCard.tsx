@@ -1,84 +1,44 @@
 "use client";
 
-import { getMetadataApiUrl, getStorageApiUrl, getStorageUrl } from "@/config/constants";
+import { APP_CONFIG, getGatewayUrl } from "@/config/app";
+import { isValidUrl } from "@/config/constants";
 import { useDepth } from "@/contexts/DepthContext";
 import { getImageOptimizationSettings, isLikelyAnimatedGif } from "@/utils/mediaUtils";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Metadata, NFT } from "../types";
+import { NFT } from "../types";
 import { ImageModal } from "./ImageModal";
 import { TransferModal } from "./TransferModal";
 
 interface NFTCardProps {
   nft: NFT;
   onQuantityUpdate?: (tokenId: string, newQuantity: number) => void;
+  priority?: boolean; // For above-the-fold images
 }
 
-export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
+export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priority = false }) => {
   const { depthEnabled } = useDepth();
-  const [metadata, setMetadata] = useState<Metadata | null>(null);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [modalNft, setModalNft] = useState(nft);
-  const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [addingToMetaMask, setAddingToMetaMask] = useState(false);
 
   // Check if the image is animated
   const isAnimated = useMemo(() => {
-    if (!metadata?.image) return false;
-    return isLikelyAnimatedGif(metadata.image);
-  }, [metadata?.image]);
+    if (!nft?.image) return false;
+    return isLikelyAnimatedGif(nft.image);
+  }, [nft?.image]);
 
   // Get optimization settings for the image
   const imageSettings = useMemo(() => {
-    return getImageOptimizationSettings(isAnimated ? 'image/gif' : undefined);
+    const settings = getImageOptimizationSettings(isAnimated ? 'image/gif' : undefined);
+    // Remove priority from settings since we set it explicitly as a prop
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { priority: _priority, ...settingsWithoutPriority } = settings;
+    return settingsWithoutPriority;
   }, [isAnimated]);
-
-  const handleLoadMetadata = useCallback(async (cid: string) => {
-    try {
-      // Use configurable metadata API URL instead of hardcoded "taurus"
-      const metadataApiUrl = getMetadataApiUrl(cid);
-      const res = await fetch(metadataApiUrl);
-      
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
-      
-      const metadata = await res.json();
-      // Use configurable storage API URL instead of hardcoded parsing
-      const imageUrl = metadata.image ? getStorageApiUrl(metadata.image) : "";
-      
-      return {
-        ...metadata,
-        image: imageUrl,
-      };
-    } catch (error) {
-      console.error("Error loading metadata", error);
-      throw error;
-    }
-  }, []);
-
-  useEffect(() => {
-    // Extract metadata CID consistently with other components
-    const metadataCid = nft?.cid ? nft.cid.split("/").pop() : null;
-    if (metadataCid) {
-      handleLoadMetadata(metadataCid)
-        .then(setMetadata)
-        .catch(console.error)
-        .finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
-    }
-  }, [nft.cid, handleLoadMetadata]);
-
-  // Update modal NFT when the original NFT changes
-  useEffect(() => {
-    if (!isTransferModalOpen) {
-      setModalNft(nft);
-    }
-  }, [nft, isTransferModalOpen]);
 
   // Handle quantity updates from the modal
   const handleQuantityUpdate = useCallback((tokenId: string, newQuantity: number) => {
@@ -96,6 +56,57 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
   const handleImageError = useCallback(() => {
     setImageError(true);
   }, []);
+
+  const handleAddToMetaMask = useCallback(async () => {
+    if (!nft?.tokenId || !window.ethereum) {
+      alert('MetaMask not detected. Please install MetaMask to add tokens.');
+      return;
+    }
+
+    setAddingToMetaMask(true);
+    try {
+      const wasAdded = await window.ethereum.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC1155',
+          options: {
+            address: APP_CONFIG.contract.address,
+            tokenId: nft.tokenId,
+            symbol: nft.name || `NFT #${nft.tokenId}`,
+            image: nft.image || '',
+          },
+        },
+      });
+      
+      if (wasAdded) {
+        // Brief success feedback
+        setTimeout(() => setAddingToMetaMask(false), 1000);
+      } else {
+        setAddingToMetaMask(false);
+      }
+    } catch (error) {
+      console.error('Error adding token to MetaMask:', error);
+      setAddingToMetaMask(false);
+      alert('Failed to add token to MetaMask. Please try again.');
+    }
+  }, [nft?.tokenId, nft?.name, nft?.image]);
+
+  const getExplorerUrl = useCallback(() => {
+    if (!nft?.tokenId) return '#';
+    return `${APP_CONFIG.evmNetwork.blockExplorer}/token/${APP_CONFIG.contract.address}/instance/${nft.tokenId}`;
+  }, [nft?.tokenId]);
+
+  // Update modal NFT when the original NFT changes
+  useEffect(() => {
+    if (!isTransferModalOpen && nft) {
+      setModalNft(nft);
+    }
+  }, [nft, isTransferModalOpen]);
+
+  // Early return if nft is not properly loaded (after all hooks)
+  if (!nft || !nft.id) {
+    return null;
+  }
 
   // Depth effect class configurations
   const stackedCardClasses = depthEnabled 
@@ -180,11 +191,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
         <div className="relative p-6 flex flex-col flex-1">
           {/* Image Section */}
           <div className={imageContainerClasses}>
-            {isLoading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
-              </div>
-            ) : imageError || !metadata?.image ? (
+            {imageError || !nft.image || !isValidUrl(nft.image) ? (
               <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                 <div className="text-center">
                   <div className="text-4xl mb-2">🖼️</div>
@@ -194,9 +201,11 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
             ) : (
               <>
                 <Image
-                  src={metadata.image}
-                  alt={metadata.name || "NFT"}
+                  src={nft.image}
+                  alt={nft.name || "NFT"}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority={priority}
                   className="object-cover hover:scale-110 transition-transform duration-300 cursor-pointer"
                   {...imageSettings}
                   onLoad={handleImageLoad}
@@ -227,13 +236,13 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
           <div className="flex-1 flex flex-col">
             {/* Title */}
             <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-blue-300 transition-colors">
-              {metadata?.name || `NFT #${nft.tokenId}`}
+              {nft.name || `NFT #${nft.tokenId}`}
             </h3>
 
             {/* Description */}
-            {metadata?.description && (
+            {nft.description && (
               <p className="text-base text-gray-300 mb-4 line-clamp-3 flex-1 leading-relaxed">
-                {metadata.description}
+                {nft.description}
               </p>
             )}
 
@@ -242,7 +251,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
               {/* Links */}
               <div className="flex flex-col gap-2">
                 <Link
-                  href={getStorageUrl(nft.cid)}
+                  href={getGatewayUrl(nft.cid)}
                   target="_blank"
                   className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors group"
                 >
@@ -252,18 +261,6 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
                   <span className="hover:underline">View Metadata</span>
                 </Link>
                 
-                {metadata?.external_url && (
-                  <Link
-                    href={metadata.external_url}
-                    target="_blank"
-                    className="inline-flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors group"
-                  >
-                    <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                    </svg>
-                    <span className="hover:underline">Visit Website</span>
-                  </Link>
-                )}
               </div>
               
               {nft.quantity === 0 && (
@@ -274,7 +271,7 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={() => setIsTransferModalOpen(true)}
                 disabled={nft.quantity === 0}
@@ -282,6 +279,35 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
               >
                 {nft.quantity === 0 ? "No Tokens Available" : "Transfer Card"}
               </button>
+              
+              <button
+                onClick={handleAddToMetaMask}
+                disabled={addingToMetaMask}
+                className="w-full px-6 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 hover:scale-105 shadow-lg font-medium flex items-center justify-center gap-2"
+              >
+                {addingToMetaMask ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    Add to MetaMask
+                  </>
+                )}
+              </button>
+              
+              <Link
+                href={getExplorerUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 hover:scale-105 shadow-lg font-medium flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+                View on Explorer
+              </Link>
             </div>
           </div>
         </div>
@@ -305,22 +331,22 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate }) => {
         nft={{
           id: modalNft.id,
           tokenId: modalNft.tokenId || "0",
-          name: metadata?.name || `NFT ${modalNft.id}`,
+          name: modalNft.name || `NFT ${modalNft.id}`,
           quantity: modalNft.quantity,
           cid: modalNft.cid,
-          image: metadata?.image || ""
+          image: modalNft.image || ""
         }}
         onQuantityUpdate={handleQuantityUpdate}
       />
 
       {/* Image Modal */}
-      {metadata?.image && (
+      {nft.image && (
         <ImageModal
           isOpen={isImageModalOpen}
           onClose={() => setIsImageModalOpen(false)}
-          imageSrc={metadata.image}
-          imageAlt={metadata.name || "NFT"}
-          title={metadata.name}
+          imageSrc={nft.image}
+          imageAlt={nft.name || "NFT"}
+          title={nft.name || "NFT"}
           mimeType={isAnimated ? 'image/gif' : undefined}
         />
       )}

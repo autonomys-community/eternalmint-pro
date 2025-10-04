@@ -1,8 +1,8 @@
 export type NFT = {
   id: string;
-  image: string;
-  name: string;
-  description: string;
+  image?: string;
+  name?: string;
+  description?: string;
   creator: string;
   quantity: number;
   cid: string;
@@ -25,3 +25,15 @@ export type Metadata = {
   description: string;
   external_url: string;
 };
+
+// MetaMask ethereum object types
+declare global {
+  interface Window {
+    ethereum?: {
+      request: (args: {
+        method: string;
+        params?: unknown;
+      }) => Promise<unknown>;
+    };
+  }
+}
