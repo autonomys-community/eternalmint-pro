@@ -37,15 +37,17 @@ export const POST = async (req: NextRequest) => {
 
 
   try {
-    const formData = await req.formData();
-    console.log("Form Data:", formData);
+    const body = await req.json();
+    console.log("Request body:", body);
 
-    const name = formData.get("name") as string;
-    const supply = parseInt(formData.get("supply") as string, 10);
-    const description = formData.get("description") as string;
-    const externalLink = formData.get("externalLink") as string;
-    const media = formData.get("media") as File | null;
-    const creator = formData.get("creator") as string;
+    const { name, supply, description, externalLink, creator, imageCid } = body;
+
+    if (!name || !supply || !description || !creator || !imageCid) {
+      return NextResponse.json(
+        { message: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
     // Validate externalLink if provided
     if (externalLink && !isValidUrl(externalLink)) {
@@ -60,7 +62,8 @@ export const POST = async (req: NextRequest) => {
       supply,
       description,
       externalLink,
-      media,
+      creator,
+      imageCid,
     });
 
     let mediaUrl = "";
@@ -179,7 +182,7 @@ export const POST = async (req: NextRequest) => {
         mediaUrl,
         txHash: tx.hash,
         cids: {
-          image: uploadedFileCid?.toString(),
+          image: imageCid,
           metadata: metadataUploadCid?.toString(),
         },
       },
