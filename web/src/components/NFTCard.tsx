@@ -4,6 +4,7 @@ import { APP_CONFIG, getGatewayUrl } from "@/config/app";
 import { isValidUrl } from "@/config/constants";
 import { useDepth } from "@/contexts/DepthContext";
 import { getImageOptimizationSettings, isLikelyAnimatedGif } from "@/utils/mediaUtils";
+import { addNFTToMetaMask, getMetaMaskErrorMessage, isMetaMaskAvailable } from "@/utils/metamask";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -58,25 +59,19 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
   }, []);
 
   const handleAddToMetaMask = useCallback(async () => {
-    if (!nft?.tokenId || !window.ethereum) {
+    if (!nft?.tokenId) {
+      alert('NFT token ID not available.');
+      return;
+    }
+
+    if (!isMetaMaskAvailable()) {
       alert('MetaMask not detected. Please install MetaMask to add tokens.');
       return;
     }
 
     setAddingToMetaMask(true);
     try {
-      const wasAdded = await window.ethereum.request({
-        method: 'wallet_watchAsset',
-        params: {
-          type: 'ERC1155',
-          options: {
-            address: APP_CONFIG.contract.address,
-            tokenId: nft.tokenId,
-            symbol: nft.name || `NFT #${nft.tokenId}`,
-            image: nft.image || '',
-          },
-        },
-      });
+      const wasAdded = await addNFTToMetaMask(nft.tokenId, nft.name, nft.image);
       
       if (wasAdded) {
         // Brief success feedback
@@ -84,10 +79,10 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
       } else {
         setAddingToMetaMask(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding token to MetaMask:', error);
       setAddingToMetaMask(false);
-      alert('Failed to add token to MetaMask. Please try again.');
+      alert(getMetaMaskErrorMessage(error));
     }
   }, [nft?.tokenId, nft?.name, nft?.image]);
 
