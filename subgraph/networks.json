@@ -7,8 +7,8 @@
   },
   "autonomys-mainnet": {
     "EternalMintNfts": {
-      "address": "0x2601FB64e5cA137f273Fa64c28056a040d132A1b",
-      "startBlock": 282110
+      "address": "0x6C3bbcA5164Dde0688E75b6b389cBF5986c7E221",
+      "startBlock": 733999
     }
   }
 }
