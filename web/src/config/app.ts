@@ -121,8 +121,8 @@ export const CONTRACT_DEPLOYMENTS = {
   production: {
     evmNetwork: 'mainnet' as NetworkName, // Will change to 'mainnet' when ready
     storageNetwork: 'mainnet' as StorageNetworkName, // Could use mainnet storage even with chronos EVM
-    contractAddress: '0x8A7325f9eA80D65c8f69F3797F345Cc831EC01f4', // Will be different for production
-    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro/v0.0.2', // Different subgraph for production
+    contractAddress: '0x6C3bbcA5164Dde0688E75b6b389cBF5986c7E221', // Will be different for production
+    subgraphUrl: 'https://api.studio.thegraph.com/query/114204/eternalmint-pro/v0.0.6', // Different subgraph for production
     version: '1.0.0',
     deployedAt: '2025-06-25', // Update with actual deployment date
   },
