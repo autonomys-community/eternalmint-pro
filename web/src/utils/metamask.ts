@@ -2,7 +2,7 @@ import { APP_CONFIG } from '@/config/app';
 
 export interface MetaMaskError extends Error {
   code?: number;
-  data?: any;
+  data?: unknown;
 }
 
 /**
@@ -53,9 +53,9 @@ export const ensureCorrectNetwork = async (): Promise<boolean> => {
       params: [{ chainId: expectedChainId }],
     });
     return true;
-  } catch (switchError: any) {
+  } catch (switchError: unknown) {
     // If the network doesn't exist (error code 4902), add it
-    if (switchError.code === 4902) {
+    if ((switchError as MetaMaskError).code === 4902) {
       try {
         await window.ethereum!.request({
           method: 'wallet_addEthereumChain',
@@ -109,13 +109,14 @@ export const addNFTToMetaMask = async (tokenId: string, name?: string, image?: s
     });
 
     return Boolean(wasAdded);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error adding NFT to MetaMask:', error);
     
     // Provide more specific error messages
-    if (error.code === 4001) {
+    const metamaskError = error as MetaMaskError;
+    if (metamaskError.code === 4001) {
       throw new Error('Request was rejected by the user.');
-    } else if (error.message?.includes('ownership')) {
+    } else if (metamaskError.message?.includes('ownership')) {
       throw new Error('Unable to verify NFT ownership. This may be due to network issues or the NFT standard not being fully supported by MetaMask.');
     } else {
       throw new Error('Failed to add NFT to MetaMask. Please ensure you own this NFT and try again.');

@@ -4,7 +4,7 @@ import { APP_CONFIG, getGatewayUrl } from "@/config/app";
 import { isValidUrl } from "@/config/constants";
 import { useDepth } from "@/contexts/DepthContext";
 import { getImageOptimizationSettings, isLikelyAnimatedGif } from "@/utils/mediaUtils";
-import { addNFTToMetaMask, getMetaMaskErrorMessage, isMetaMaskAvailable } from "@/utils/metamask";
+import { addNFTToMetaMask, getMetaMaskErrorMessage, isMetaMaskAvailable, MetaMaskError } from "@/utils/metamask";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -79,10 +79,10 @@ export const NFTCard: React.FC<NFTCardProps> = ({ nft, onQuantityUpdate, priorit
       } else {
         setAddingToMetaMask(false);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding token to MetaMask:', error);
       setAddingToMetaMask(false);
-      alert(getMetaMaskErrorMessage(error));
+      alert(getMetaMaskErrorMessage(error as MetaMaskError));
     }
   }, [nft?.tokenId, nft?.name, nft?.image]);
 
