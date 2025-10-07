@@ -9,7 +9,7 @@ fi
 forge verify-contract  \
     --rpc-url $RPC_URL  \
     --verifier blockscout  \
-    --verifier-url https://explorer.auto-evm.chronos.autonomys.xyz/api \
+    --verifier-url $VERIFIER_URL \
     --evm-version london \
     --chain $CHAIN_ID \
     --compiler-version 0.8.30  \
