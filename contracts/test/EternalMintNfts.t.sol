@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {EternalMintNfts} from "../src/EternalMintNfts.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract EternalMintNftsTest is Test {
     EternalMintNfts public eternalMintNfts;
@@ -131,7 +130,7 @@ contract EternalMintNftsTest is Test {
         assertEq(eternalMintNfts.balanceOf(nftCreator, tokenId), supply, "NFT creator should have the correct token balance");
 
         // Assert that the CID is correctly associated with the tokenId
-        assertEq(eternalMintNfts.getCID(tokenId), cid, "CID should be correctly associated with tokenId");
+        assertEq(eternalMintNfts.getCid(tokenId), cid, "CID should be correctly associated with tokenId");
 
         // Assert that the creator of the tokenId is the specified nftCreator
         assertEq(eternalMintNfts.getCreator(tokenId), nftCreator, "Creator should be the specified NFT creator address");
@@ -180,7 +179,7 @@ contract EternalMintNftsTest is Test {
     }
 
     /**
-     * @notice Tests the `getCID` function to ensure it returns the correct CID for a given tokenId.
+     * @notice Tests the `getCid` function to ensure it returns the correct CID for a given tokenId.
      */
     function test_GetCID() public {
         // Arrange
@@ -195,10 +194,10 @@ contract EternalMintNftsTest is Test {
         vm.stopPrank();
 
         // Act: Retrieve the CID associated with the tokenId
-        string memory retrievedCID = eternalMintNfts.getCID(tokenId);
+        string memory retrievedCid = eternalMintNfts.getCid(tokenId);
 
         // Assert that the retrieved CID matches the original CID
-        assertEq(retrievedCID, cid, "Retrieved CID should match the original CID");
+        assertEq(retrievedCid, cid, "Retrieved CID should match the original CID");
     }
 
     /**
@@ -206,18 +205,18 @@ contract EternalMintNftsTest is Test {
      */
     function test_SupportsInterface() public view {
         // Define interface IDs
-        bytes4 ERC1155_INTERFACE_ID = 0xd9b67a26;
-        bytes4 ACCESS_CONTROL_INTERFACE_ID = 0x7965db0b;
-        bytes4 RANDOM_INTERFACE_ID = 0xffffffff;
+        bytes4 erc1155InterfaceId = 0xd9b67a26;
+        bytes4 accessControlInterfaceId = 0x7965db0b;
+        bytes4 randomInterfaceId = 0xffffffff;
 
         // Assert that the contract supports ERC1155 interface
-        assertTrue(eternalMintNfts.supportsInterface(ERC1155_INTERFACE_ID), "Should support ERC1155 interface");
+        assertTrue(eternalMintNfts.supportsInterface(erc1155InterfaceId), "Should support ERC1155 interface");
 
         // Assert that the contract supports AccessControl interface
-        assertTrue(eternalMintNfts.supportsInterface(ACCESS_CONTROL_INTERFACE_ID), "Should support AccessControl interface");
+        assertTrue(eternalMintNfts.supportsInterface(accessControlInterfaceId), "Should support AccessControl interface");
 
         // Assert that the contract does not support a random, undefined interface
-        assertFalse(eternalMintNfts.supportsInterface(RANDOM_INTERFACE_ID), "Should not support undefined interface");
+        assertFalse(eternalMintNfts.supportsInterface(randomInterfaceId), "Should not support undefined interface");
     }
 
     /**
@@ -232,4 +231,98 @@ contract EternalMintNftsTest is Test {
         eternalMintNfts.revokeRole(MINTER_ROLE, minter);
         assertFalse(eternalMintNfts.hasRole(MINTER_ROLE, minter), "Minter should not have MINTER_ROLE after revocation");
     }
+
+    /**
+     * @notice Tests the `uri` function to ensure it returns the correct metadata URI for a given tokenId.
+     */
+    function test_Uri() public {
+        // Arrange: Grant MINTER_ROLE to the minter
+        eternalMintNfts.grantRole(MINTER_ROLE, minter);
+
+        // Define test data
+        string memory cid = "QmTestCID123456789";
+        uint256 supply = 100;
+
+        // Act: Mint an NFT
+        vm.prank(minter);
+        eternalMintNfts.mint(nftCreator, cid, supply);
+
+        // Get the token ID for the minted NFT
+        uint256 tokenId = eternalMintNfts.getTokenId(cid);
+
+        // Act: Get the URI for the minted token
+        string memory tokenUri = eternalMintNfts.uri(tokenId);
+
+        // Assert: Verify the URI matches the expected format
+        string memory expectedUri = string(abi.encodePacked("https://gateway.autonomys.xyz/file/", cid));
+        assertEq(tokenUri, expectedUri, "URI should match the expected format with CID");
+    }
+
+    /**
+     * @notice Tests that the `uri` function reverts for non-existent tokens.
+     */
+    function test_UriRevertsForNonExistentToken() public {
+        // Arrange: Use a token ID that doesn't exist
+        uint256 nonExistentTokenId = 999;
+
+        // Act & Assert: Expect the function to revert
+        vm.expectRevert("Token does not exist");
+        eternalMintNfts.uri(nonExistentTokenId);
+    }
+
+    /**
+     * @notice Tests that the gateway URL can be retrieved.
+     */
+    function test_GetGatewayUrl() public view {
+        // Act: Get the gateway URL
+        string memory gatewayUrl = eternalMintNfts.getGatewayUrl();
+
+        // Assert: Verify it matches the expected fixed gateway URL
+        assertEq(gatewayUrl, "https://gateway.autonomys.xyz/file/", "Gateway URL should match the fixed value");
+    }
+
+    /**
+     * @notice Tests that the contract name can be retrieved.
+     */
+    function test_Name() public view {
+        // Act: Get the contract name
+        string memory contractName = eternalMintNfts.name();
+
+        // Assert: Verify it matches the expected name
+        assertEq(contractName, "EternalMint Pro", "Contract name should be 'EternalMint Pro'");
+    }
+
+    /**
+     * @notice Tests that the contract symbol can be retrieved.
+     */
+    function test_Symbol() public view {
+        // Act: Get the contract symbol
+        string memory contractSymbol = eternalMintNfts.symbol();
+
+        // Assert: Verify it matches the expected symbol
+        assertEq(contractSymbol, "EMP", "Contract symbol should be 'EMP'");
+    }
+
+    /**
+     * @notice Tests that the contract name constant can be accessed directly.
+     */
+    function test_NameConstant() public view {
+        // Act: Get the contract name constant
+        string memory contractName = eternalMintNfts.NAME();
+
+        // Assert: Verify it matches the expected name
+        assertEq(contractName, "EternalMint Pro", "Contract NAME constant should be 'EternalMint Pro'");
+    }
+
+    /**
+     * @notice Tests that the contract symbol constant can be accessed directly.
+     */
+    function test_SymbolConstant() public view {
+        // Act: Get the contract symbol constant
+        string memory contractSymbol = eternalMintNfts.SYMBOL();
+
+        // Assert: Verify it matches the expected symbol
+        assertEq(contractSymbol, "EMP", "Contract SYMBOL constant should be 'EMP'");
+    }
+
 }

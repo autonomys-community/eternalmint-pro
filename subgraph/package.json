@@ -3,12 +3,22 @@
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
+    "codegen:staging": "graph codegen subgraph.staging.yaml", 
+    "codegen:production": "graph codegen subgraph.production.yaml",
     "build": "graph build",
-    "deploy": "graph deploy eternal-mint-nfts-taurus --version-label v0.0.1 --node https://subgraphs.alchemy.com/api/subgraphs/deploy --ipfs https://ipfs.satsuma.xyz",
-    "create-local": "graph create --node http://localhost:8020/ eternal-mint-nfts-taurus",
-    "remove-local": "graph remove --node http://localhost:8020/ eternal-mint-nfts-taurus",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 eternal-mint-nfts-taurus",
-    "test": "graph test"
+    "build:staging": "graph build subgraph.staging.yaml",
+    "build:production": "graph build subgraph.production.yaml",
+    "auth": "graph auth",
+    "deploy": "node deploy.js",
+    "deploy:dev": "node deploy.js dev",
+    "deploy:staging": "node deploy.js staging", 
+    "deploy:production": "node deploy.js production",
+    "create-local": "graph create --node http://localhost:8020/ eternalmint-pro",
+    "remove-local": "graph remove --node http://localhost:8020/ eternalmint-pro", 
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 eternalmint-pro",
+    "test": "graph test",
+    "validate": "node validate-config.js",
+    "status": "node status.js"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.97.1",

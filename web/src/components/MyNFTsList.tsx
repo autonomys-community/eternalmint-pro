@@ -1,8 +1,8 @@
 "use client";
 
-import { getMetadataApiUrl, getStorageApiUrl } from "@/config/constants";
+import { getGatewayUrl } from "@/config/app";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAccount } from "wagmi";
 import { NFT } from "../types";
 import { NFTCard } from "./NFTCard";
@@ -24,10 +24,19 @@ export const MyNFTsList: React.FC = () => {
   const [ownedNFTs, setOwnedNFTs] = useState<OwnedNFT[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fetchingRef = useRef(false); // Prevent duplicate fetches
 
   const fetchOwnedNFTs = useCallback(async () => {
     if (!address || !isConnected) return;
-
+    
+    // Prevent duplicate fetches (React StrictMode, re-renders, etc.)
+    if (fetchingRef.current) {
+      console.log('MyNFTsList: Fetch already in progress, skipping...');
+      return;
+    }
+    
+    console.log('MyNFTsList: Starting fetch for address:', address);
+    fetchingRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -58,51 +67,40 @@ export const MyNFTsList: React.FC = () => {
       // Fetch details for each owned token
       const nfts: OwnedNFT[] = [];
 
-      for (let i = 0; i < tokenIds.length; i++) {
+      // Process all tokens in parallel instead of sequentially
+      const nftPromises = tokenIds.map(async (tokenIdBigInt: bigint, i: number) => {
         try {
-          const tokenId = tokenIds[i].toString();
-          const balance = parseInt(balances[i].toString());
+          const tokenId = tokenIdBigInt.toString();
+          const balance = parseInt((balances[i] as bigint).toString());
 
-          // Include all tokens, even those with zero balance
-          // Get CID for this token
+          // Fetch CID
           const cidResponse = await fetch("/api/utils/contract-call", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              method: "getCID",
+              method: "getCid",
               args: [tokenId]
             })
           });
 
-          if (!cidResponse.ok) continue;
+          if (!cidResponse.ok) return null;
 
           const cidData = await cidResponse.json();
+
           const cid = cidData.result;
 
-          // Get supply for this token
-          const supplyResponse = await fetch("/api/utils/contract-call", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              method: "getSupply",
-              args: [tokenId]
-            })
-          });
-
-          if (!supplyResponse.ok) continue;
-
-          // Fetch metadata to get image, name, description
+          // Fetch metadata
           let imageUrl = "";
           let name = "";
           let description = "";
 
           try {
-            // For metadata CIDs from contract, construct URL directly using current storage network
-            const metadataApiUrl = getMetadataApiUrl(cid);
-            const metadataResponse = await fetch(metadataApiUrl);
+            // Fetch metadata directly from gateway
+            const metadataUrl = getGatewayUrl(cid);
+            const metadataResponse = await fetch(metadataUrl);
             if (metadataResponse.ok) {
               const metadata = await metadataResponse.json();
-              imageUrl = metadata.image ? getStorageApiUrl(metadata.image) : "";
+              imageUrl = metadata.image || "";
               name = metadata.name || `NFT ${tokenId}`;
               description = metadata.description || "";
             }
@@ -111,21 +109,28 @@ export const MyNFTsList: React.FC = () => {
             name = `NFT ${tokenId}`;
           }
 
-          nfts.push({
+          return {
             id: `${address}-${tokenId}`,
-            tokenId,
+            tokenId: tokenId,
             balance,
             cid,
             image: imageUrl,
             name,
             description,
             quantity: balance
-          });
+          };
 
         } catch (error) {
-          console.error(`Error processing token ${tokenIds[i]}:`, error);
+          console.error(`Error processing token ${tokenIdBigInt}:`, error);
+          return null;
         }
-      }
+      });
+
+      // Wait for all NFTs to be processed and filter out nulls
+      const processedNfts = await Promise.all(nftPromises);
+      const validNfts = processedNfts.filter((nft): nft is OwnedNFT => nft !== null);
+      
+      nfts.push(...validNfts);
 
       setOwnedNFTs(nfts);
     } catch (error) {
@@ -133,6 +138,8 @@ export const MyNFTsList: React.FC = () => {
       setError("Failed to load your NFTs. Please try again.");
     } finally {
       setLoading(false);
+      fetchingRef.current = false; // Reset fetch flag
+      console.log('MyNFTsList: Fetch completed');
     }
   }, [address, isConnected]);
 
@@ -268,7 +275,7 @@ export const MyNFTsList: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 xl:grid-cols-2 items-stretch auto-rows-fr">
-        {ownedNFTs.map((nft) => (
+        {ownedNFTs.map((nft, index) => (
           <NFTCard 
             key={nft.id} 
             nft={{
@@ -282,6 +289,7 @@ export const MyNFTsList: React.FC = () => {
               tokenId: nft.tokenId
             } as NFT}
             onQuantityUpdate={updateNFTQuantity}
+            priority={index < 2} // Priority for first 2 NFTs (above the fold)
           />
         ))}
       </div>

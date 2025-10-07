@@ -1,5 +1,5 @@
-import { APP_CONFIG } from "@/config/app";
-import { getImageSizeErrorMessage, getImageTypeErrorMessage, getStorageUrl, isValidImageSize, isValidImageType } from "@/config/constants";
+import { APP_CONFIG, getGatewayUrl } from "@/config/app";
+import { isValidUrl } from "@/config/constants";
 import { createAutoDriveApi } from "@autonomys/auto-drive";
 import { Contract, JsonRpcProvider, Wallet } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
@@ -37,89 +37,62 @@ export const POST = async (req: NextRequest) => {
 
 
   try {
-    const formData = await req.formData();
-    console.log("Form Data:", formData);
+    const body = await req.json();
+    console.log("Request body:", body);
 
-    const name = formData.get("name") as string;
-    const supply = parseInt(formData.get("supply") as string, 10);
-    const description = formData.get("description") as string;
-    const externalLink = formData.get("externalLink") as string;
-    const media = formData.get("media") as File | null;
-    const creator = formData.get("creator") as string;
+    const { name, supply, description, externalLink, creator, imageCid } = body;
+
+    if (!name || !supply || !description || !creator || !imageCid) {
+      return NextResponse.json(
+        { message: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Validate externalLink if provided
+    if (externalLink && !isValidUrl(externalLink)) {
+      return NextResponse.json(
+        { message: "Invalid external link URL. Only HTTP and HTTPS URLs are allowed." },
+        { status: 400 }
+      );
+    }
 
     console.log("Received Data:", {
       name,
       supply,
       description,
       externalLink,
-      media,
+      creator,
+      imageCid,
     });
 
-    let mediaUrl = "";
+    // Use the provided imageCid (file was already uploaded by frontend)
+    const mediaUrl = getGatewayUrl(imageCid);
 
-    if (!media)
-      return NextResponse.json(
-        { message: "Media is required" },
-        { status: 400 }
-      );
-    if (!isValidImageType(media.type))
-      return NextResponse.json(
-        { message: getImageTypeErrorMessage() },
-        { status: 400 }
-      );
-    if (!isValidImageSize(media.size)) {
-      return NextResponse.json(
-        { message: getImageSizeErrorMessage() },
-        { status: 400 }
-      );
-    }
-
-    const arrayBuffer = await media.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Use the storage network name from APP_CONFIG
-    const storageNetworkName = APP_CONFIG.storage.networkName;
-    let networkString: "taurus" | "mainnet";
-    if (storageNetworkName === "taurus") {
-      networkString = "taurus";
-    } else if (storageNetworkName === "mainnet") {
-      networkString = "mainnet";
-    } else {
-      return NextResponse.json(
-        { message: `Invalid storage network: ${storageNetworkName}` },
-        { status: 500 }
-      );
-    }
-
+    // Initialize Auto Drive client for metadata upload
     const driveClient = createAutoDriveApi({
-      apiKey: process.env.AUTO_DRIVE_API_KEY!, 
-      network: networkString
+      apiKey: process.env.AUTO_DRIVE_API_KEY!,
+      network: "mainnet"
     });
 
-    const uploadedFileCid = await driveClient.uploadFile(
-      {
-        read: async function* () {
-          yield buffer;
-        },
-        name: media.name,
-        mimeType: media.type,
-        size: buffer.length,
-      },
-      {}
-    );
-
-    console.log("Final Upload Response:", uploadedFileCid);
-
-    const imageCid = uploadedFileCid?.toString() || "";
-    mediaUrl = getStorageUrl(imageCid); // For response only
-
-    const metadata = {
+    // Build metadata object - only include external_url if user provided a valid one
+    const metadata: {
+      description: string;
+      image: string;
+      name: string;
+      attributes: never[];
+      external_url?: string;
+    } = {
       description,
-      external_url: externalLink,
-      image: `${storageNetworkName}:${imageCid}`, // Store network:cid format
+      image: mediaUrl,
       name,
       attributes: [],
     };
+
+    // Only add external_url if user provided a valid, non-empty link
+    if (isValidUrl(externalLink)) {
+      metadata.external_url = externalLink.trim();
+    }
     console.log("Metadata:", metadata);
 
     const metadataBuffer = Buffer.from(JSON.stringify(metadata));
@@ -171,7 +144,7 @@ export const POST = async (req: NextRequest) => {
         mediaUrl,
         txHash: tx.hash,
         cids: {
-          image: uploadedFileCid?.toString(),
+          image: imageCid,
           metadata: metadataUploadCid?.toString(),
         },
       },
